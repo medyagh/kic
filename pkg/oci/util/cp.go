@@ -8,7 +8,7 @@ import (
 func CopyTo(hostPath, containerNameOrID, destPath string) error {
 	cmd := exec.Command(
 		"docker", "cp",
-		hostPath, // from the source file
+		hostPath,                       // from the source file
 		containerNameOrID+":"+destPath, // to the node, at dest
 	)
 	return cmd.Run()
@@ -19,7 +19,7 @@ func CopyFrom(containerNameOrID, srcPath, hostPath string) error {
 	cmd := exec.Command(
 		"docker", "cp",
 		containerNameOrID+":"+srcPath, // from the node, at src
-		hostPath, // to the host
+		hostPath,                      // to the host
 	)
 	return cmd.Run()
 }

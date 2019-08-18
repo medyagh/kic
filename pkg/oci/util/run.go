@@ -1,5 +1,10 @@
 package util
 
+import (
+	"github.com/medyagh/kic/pkg/exec"
+	"k8s.io/klog"
+)
+
 // Run creates a container with "docker run", with some error handling
 func Run(image string, opts ...RunOpt) error {
 	o := &runOpts{}
