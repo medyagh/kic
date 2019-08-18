@@ -11,7 +11,7 @@ import (
 
 // PullIfNotPresent pulls docker image if not present back off exponentially
 func PullIfNotPresent(image string) (err error) {
-	cmd := exec.Command("docker", "inspect", "--type=image", image)
+	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
 	if err := cmd.Run(); err == nil {
 		klog.Infof("Image: %s present locally", image)
 		return nil
@@ -32,7 +32,7 @@ func PullIfNotPresent(image string) (err error) {
 // Pull pulls an image, retrying up to retries times
 func pull(image string) error {
 	klog.Infof("Trying to pulling image: %s ...", image)
-	err := exec.Command("docker", "pull", image).Run()
+	err := exec.Command(DefaultOCI, "pull", image).Run()
 	if err != nil {
 		klog.Errorf("Temproary error : %v Trying again to pull image: %s ...", err, image)
 	}

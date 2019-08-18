@@ -70,6 +70,15 @@ func (d *Spec) Create(clusterLabel string) (node *Node, err error) {
 	return node, err
 }
 
+func (d *Spec) Stop() error {
+	cmd := exec.Command("docker", "pause", d.Name)
+	_, err := exec.CombinedOutputLines(cmd)
+	if err != nil {
+		return errors.Wrapf(err, "stopping node")
+	}
+	return nil
+}
+
 func (d *Spec) Delete() error {
 	cmd := exec.Command("docker", "rm", "-f", "-v", d.Name)
 	_, err := exec.CombinedOutputLines(cmd)

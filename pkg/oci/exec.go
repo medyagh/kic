@@ -83,7 +83,7 @@ func (c *containerCmd) Run() error {
 		// finally, with the caller args
 		c.args...,
 	)
-	cmd := exec.Command("docker", args...)
+	cmd := exec.Command(DefaultOCI, args...)
 	if c.stdin != nil {
 		cmd.SetStdin(c.stdin)
 	}

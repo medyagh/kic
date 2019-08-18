@@ -36,7 +36,7 @@ func Run(image string, opts ...RunOpt) error {
 	args = append(args, runArgs...)
 	args = append(args, image)
 	args = append(args, o.ContainerArgs...)
-	cmd := exec.Command("docker", args...)
+	cmd := exec.Command(DefaultOCI, args...)
 	output, err := exec.CombinedOutputLines(cmd)
 	if err != nil {
 		// log error output if there was any
