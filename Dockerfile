@@ -1,2 +1,2 @@
-FROM kindest/node:v1.15.0
+FROM kindest/node:${KUBE_VER}
 RUN echo "KIC!" > "/kic.txt"

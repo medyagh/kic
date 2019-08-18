@@ -13,16 +13,22 @@ before_install:
 before_script:
 - echo "Do nothing before script either "
 script:
-- docker build --tag local/kic:latest .
-- docker tag local/kic medyagh/kic:$TRAVIS_COMMIT 
-- docker tag local/kic medyagh/kic:latest
-
+- docker build --tag medyagh/kic:v1.15.0 --build-arg KUBE_VER=v1.15.0 .
+- docker build --tag medyagh/kic:v1.14.3 --build-arg KUBE_VER=v1.14.3 .
+- docker build --tag medyagh/kic:v1.13.7 --build-arg KUBE_VER=v1.13.7 .
+- docker build --tag medyagh/kic:v1.12.9 --build-arg KUBE_VER=v1.12.9 .
+- docker build --tag medyagh/kic:v1.11.10 --build-arg KUBE_VER=v1.11.10 .
 after_script:
 - docker images
 before_deploy:
 - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 deploy:
   provider: script
-  script: docker push medyagh/kic:$TRAVIS_COMMIT && docker push medyagh/kic:latest
+  script:
+    - docker push medyagh/kic:v1.15.0
+    - docker push medyagh/kic:v1.14.3
+    - docker push medyagh/kic:v1.13.7
+    - docker push medyagh/kic:v1.12.9
+    - docker push medyagh/kic:v1.11.10
   on:
     branch: master
