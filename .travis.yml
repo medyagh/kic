@@ -22,13 +22,9 @@ after_script:
 - docker images
 before_deploy:
 - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
 deploy:
   provider: script
-  script:
-    - docker push medyagh/kic:v1.15.0
-    - docker push medyagh/kic:v1.14.3
-    - docker push medyagh/kic:v1.13.7
-    - docker push medyagh/kic:v1.12.9
-    - docker push medyagh/kic:v1.11.10
+  script: bash docker_push.sh
   on:
     branch: master
