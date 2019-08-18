@@ -8,7 +8,7 @@ import (
 	"github.com/medyagh/kic/pkg/config/kustomize"
 )
 
-func GetMagicConfig(nodeIP string, profile string, kubeVersion string) (string, error) {
+func KubeAdmCfg(nodeIP string, profile string, kubeVersion string) (string, error) {
 	clusterCfg := &config.Cluster{}
 	cd := ConfigData{
 		ClusterName:          profile,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/medyagh/kic/pkg/image"
 	"github.com/medyagh/kic/pkg/kube"
 	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/node/cri"
@@ -19,6 +20,7 @@ func main() {
 	delete := flag.Bool("delete", false, "to delete")
 	start := flag.Bool("start", false, "to start")
 	hostIP := flag.String("host-ip", "127.0.0.1", "node's ip")
+	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -27,7 +29,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ns := newNodeSpec(*profile, *hostIP, hostPort)
+	imgSha, _ := image.NameForVersion(*kubeVersion)
+
+	ns := newNodeSpec(*profile, imgSha, *hostIP, hostPort)
 
 	if *delete {
 		fmt.Printf("Deleting ... %s\n", *profile)
@@ -37,21 +41,19 @@ func main() {
 
 	if *start {
 		fmt.Printf("Starting on port %d\n ", hostPort)
-
-		img := "kindest/node:v1.15.0"
-		err := oci.PullIfNotPresent(img)
+		err := oci.PullIfNotPresent(imgSha)
 		if err != nil {
-			klog.Errorf("Error pulling image %s", img)
+			klog.Errorf("Error pulling image %s", imgSha)
 		}
 
 		// create node
 		node, _ := ns.Create("kic.cluster" + *profile)
 
 		ip, _, _ := node.IP()
-		kubeADMCFG, _ := kube.GetMagicConfig(ip, *profile, "v1.15.0")
+		kCfg, _ := kube.KubeAdmCfg(ip, *profile, *kubeVersion)
 
 		// copy the config to the node
-		if err := node.WriteFile("/kind/kubeadm.conf", kubeADMCFG); err != nil {
+		if err := node.WriteFile("/kind/kubeadm.conf", kCfg); err != nil {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}
 
@@ -65,10 +67,10 @@ func main() {
 
 }
 
-func newNodeSpec(profile string, hostIP string, hostPort int32) *node.Spec {
+func newNodeSpec(profile string, imgSHA string, hostIP string, hostPort int32) *node.Spec {
 	return &node.Spec{
 		Name:              profile + "control-plane",
-		Image:             "kindest/node:v1.15.0@sha256:b4d092fd2b507843dd096fe6c85d06a27a0cbd740a0b32a880fe61aba24bb478",
+		Image:             imgSHA,
 		Role:              "control-plane",
 		ExtraMounts:       []cri.Mount{},
 		ExtraPortMappings: []cri.PortMapping{},
