@@ -51,7 +51,7 @@ func main() {
 
 		ip, _, _ := node.IP()
 
-		c := kube.ConfigData{
+		cfg := kube.ConfigData{
 			ClusterName:          *profile,
 			KubernetesVersion:    *kubeVersion,
 			ControlPlaneEndpoint: ip + ":6443",
@@ -64,7 +64,7 @@ func main() {
 			IPv6:                 false,
 		}
 
-		kCfg, _ := kube.KubeAdmCfg(c)
+		kCfg, _ := kube.KubeAdmCfg(cfg)
 
 		// copy the config to the node
 		if err := node.WriteFile("/kind/kubeadm.conf", kCfg); err != nil {
