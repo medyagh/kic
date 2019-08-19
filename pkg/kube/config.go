@@ -18,6 +18,7 @@ package kube
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -70,9 +71,8 @@ func (c *ConfigData) Derive() {
 	}
 }
 
-// Config returns a kubeadm config generated from config data, in particular
-// the kubernetes version
-func Config(data ConfigData) (config string, err error) {
+// templateExec executes the right kubeadm config template based on config data
+func templateExec(data ConfigData) (config string, err error) {
 	klog.Infof("Configuration Input data: %v", data)
 	ver, err := version.ParseGeneric(data.KubernetesVersion)
 	if err != nil {
@@ -100,6 +100,9 @@ func Config(data ConfigData) (config string, err error) {
 	// execute the template
 	var buff bytes.Buffer
 	err = t.Execute(&buff, data)
+	fmt.Println("------------ DATA ------------")
+	fmt.Println(data)
+	fmt.Println("------------------------")
 	if err != nil {
 		return "", errors.Wrap(err, "error executing config template")
 	}

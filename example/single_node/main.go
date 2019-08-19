@@ -47,10 +47,24 @@ func main() {
 		}
 
 		// create node
-		node, _ := ns.Create("kic.cluster" + *profile)
+		node, _ := ns.Create()
 
 		ip, _, _ := node.IP()
-		kCfg, _ := kube.KubeAdmCfg(ip, *profile, *kubeVersion)
+
+		c := kube.ConfigData{
+			ClusterName:          *profile,
+			KubernetesVersion:    *kubeVersion,
+			ControlPlaneEndpoint: ip + ":6443",
+			APIBindPort:          6443,
+			APIServerAddress:     *hostIP,
+			Token:                "abcdef.0123456789abcdef",
+			PodSubnet:            "10.244.0.0/16",
+			ServiceSubnet:        "10.96.0.0/12",
+			ControlPlane:         true,
+			IPv6:                 false,
+		}
+
+		kCfg, _ := kube.KubeAdmCfg(c)
 
 		// copy the config to the node
 		if err := node.WriteFile("/kind/kubeadm.conf", kCfg); err != nil {
@@ -63,12 +77,16 @@ func main() {
 		kube.WriteKubeConfig(c, *profile)
 		kube.InstallCNI(node, "10.244.0.0/16")
 
+		fmt.Println("Listing containers created by kic....")
+		ns.ListNodes()
+
 	}
 
 }
 
 func newNodeSpec(profile string, imgSHA string, hostIP string, hostPort int32) *node.Spec {
 	return &node.Spec{
+		Profile:           profile,
 		Name:              profile + "control-plane",
 		Image:             imgSHA,
 		Role:              "control-plane",

@@ -8,22 +8,9 @@ import (
 	"github.com/medyagh/kic/pkg/config/kustomize"
 )
 
-func KubeAdmCfg(nodeIP string, profile string, kubeVersion string) (string, error) {
+func KubeAdmCfg(cd ConfigData) (string, error) {
 	clusterCfg := &config.Cluster{}
-	cd := ConfigData{
-		ClusterName:          profile,
-		KubernetesVersion:    kubeVersion,
-		ControlPlaneEndpoint: nodeIP + ":6443",
-		APIBindPort:          6443,
-		APIServerAddress:     "127.0.0.1",
-		Token:                "abcdef.0123456789abcdef",
-		PodSubnet:            "10.244.0.0/16",
-		ServiceSubnet:        "10.96.0.0/12",
-		ControlPlane:         true,
-		IPv6:                 false,
-	}
-
-	config, err := Config(cd)
+	config, err := templateExec(cd)
 	if err != nil {
 		return "", err
 	}
@@ -31,6 +18,7 @@ func KubeAdmCfg(nodeIP string, profile string, kubeVersion string) (string, erro
 	patches, jsonPatches := setPatchNames(
 		allPatchesFromConfig(clusterCfg),
 	)
+
 	// apply patches
 	patched, err := kustomize.Build([]string{config}, patches, jsonPatches)
 	if err != nil {

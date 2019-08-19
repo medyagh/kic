@@ -6,7 +6,6 @@
 	kubectl expose deployment hello-minikube --type=NodePort
  	kubectl port-forward service/hello-minikube 8080
 	curl http://localhost:8080/
-
     ./single_node -delete -profile m5
 
 
