@@ -76,10 +76,6 @@ func main() {
 		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		kube.WriteKubeConfig(c, *profile)
 		kube.InstallCNI(node, "10.244.0.0/16")
-
-		fmt.Println("Listing containers created by kic....")
-		ns.ListNodes()
-
 	}
 
 }
