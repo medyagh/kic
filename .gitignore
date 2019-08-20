@@ -2,3 +2,4 @@ out
 ./out/*
 example/single_node/single_node
 example/build_img/build_img
+.vscode

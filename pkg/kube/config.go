@@ -18,7 +18,6 @@ package kube
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"text/template"
 
@@ -100,9 +99,6 @@ func templateExec(data ConfigData) (config string, err error) {
 	// execute the template
 	var buff bytes.Buffer
 	err = t.Execute(&buff, data)
-	fmt.Println("------------ DATA ------------")
-	fmt.Println(data)
-	fmt.Println("------------------------")
 	if err != nil {
 		return "", errors.Wrap(err, "error executing config template")
 	}
