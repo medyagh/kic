@@ -13,6 +13,7 @@ before_install:
 before_script:
 - echo "Do nothing before script either "
 script:
+- ./e2e-test.sh
 - docker build --tag medyagh/kic:v1.15.0 --build-arg KUBE_VER=v1.15.0 .
 - docker build --tag medyagh/kic:v1.14.3 --build-arg KUBE_VER=v1.14.3 .
 - docker build --tag medyagh/kic:v1.13.7 --build-arg KUBE_VER=v1.13.7 .
