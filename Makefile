@@ -13,18 +13,5 @@ out/linters/golangci-lint:
 lint: out/linters/golangci-lint
 	./out/linters/golangci-lint run ${GOLINT_OPTIONS} ./...
 
-dummy:
-	echo "hello world :)"
-
-
-
-test:
-	true
-
-image:
-	@docker build -t medyagh/kic:567 .
-
-push-image:
-	@docker push medyagh/kic:567)
 
 .PHONY: image push-image test

@@ -4,7 +4,7 @@ set -eux -o pipefail
 # super simple just for quick e2e
 GO111MODULE=on go mod download
 cd example/single_node 
-go build
+GO111MODULE=on go build
 lsof -ti tcp:8080 | xargs kill || true
 ./single_node -delete -profile m5
 ./single_node -start -profile m5
