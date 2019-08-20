@@ -2,7 +2,7 @@
 set -eux -o pipefail
 
 # super simple just for quick e2e
-
+go mod download
 cd example/single_node 
 go build
 lsof -ti tcp:8080 | xargs kill || true
