@@ -8,6 +8,7 @@ To be used a a library
 - multiple profiles.
 - start / stop / pause.
 - docker / podman.
+- Bring your own Command Runner.
 
- ### Total lines of code: 1925 
+ ### Total lines of code: 1844 
  (counted by  find . -name '*.go' | xargs wc -l)

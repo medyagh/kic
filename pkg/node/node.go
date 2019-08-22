@@ -17,6 +17,7 @@ type Node struct {
 	name string
 	// cached node info etc.
 	cache *nodeCache
+	cmder exec.Cmder
 }
 
 // WriteFile writes content to dest on the node
@@ -59,10 +60,10 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 
 // Command returns a new exec.Cmd that will run on the node
 func (n *Node) Command(command string, args ...string) exec.Cmd {
-	return n.Cmder().Command(command, args...)
+	return n.cmder.Command(command, args...)
 }
 
-// Cmder returns an exec.Cmder that runs on the node via docker exec
-func (n *Node) Cmder() exec.Cmder {
-	return oci.ContainerCmder(n.name)
-}
+// // Cmder returns an exec.Cmder that runs on the node via docker exec
+// func (n *Node) Cmder() exec.Cmder {
+// 	return oci.ContainerCmder(n.name)
+// }

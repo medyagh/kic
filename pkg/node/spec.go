@@ -23,10 +23,10 @@ type Spec struct {
 	IPv6              bool
 }
 
-func (d *Spec) Create() (node *Node, err error) {
+func (d *Spec) Create(cmder exec.Cmder) (node *Node, err error) {
 	switch d.Role {
 	case "control-plane":
-		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings)
+		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, cmder)
 		return node, err
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)

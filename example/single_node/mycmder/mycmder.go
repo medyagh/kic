@@ -1,4 +1,4 @@
-package oci
+package mycmder
 
 import (
 	"io"
@@ -9,20 +9,45 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// IsTerminal returns true if the writer w is a terminal
-func IsTerminal(w io.Writer) bool {
-	if v, ok := (w).(*os.File); ok {
-		return terminal.IsTerminal(int(v.Fd()))
+// exampale of bringing your own exec.Cmder
+
+const defaultOCI = "docker"
+
+// New creates a new implementor of exec.Cmder
+func New(containerNameOrID string) exec.Cmder {
+	return &containerCmder{
+		nameOrID: containerNameOrID,
 	}
-	return false
+}
+
+// containerCmder implements exec.Cmder for docker containers
+type containerCmder struct {
+	nameOrID string
+}
+
+func (c *containerCmder) Command(command string, args ...string) exec.Cmd {
+	return &containerCmd{
+		nameOrID: c.nameOrID,
+		command:  command,
+		args:     args,
+	}
+}
+
+// containerCmd implements exec.Cmd for docker containers
+type containerCmd struct {
+	nameOrID string // the container name or ID
+	command  string
+	args     []string
+	env      []string
+	stdin    io.Reader
+	stdout   io.Writer
+	stderr   io.Writer
 }
 
 func (c *containerCmd) Run() error {
 	args := []string{
 		"exec",
 		// run with privileges so we can remount etc..
-		// this might not make sense in the most general sense, but it is
-		// important to many kind commands
 		"--privileged",
 	}
 	if c.stdin != nil {
@@ -52,7 +77,7 @@ func (c *containerCmd) Run() error {
 		// finally, with the caller args
 		c.args...,
 	)
-	cmd := exec.Command(DefaultOCI, args...)
+	cmd := exec.Command(defaultOCI, args...)
 	if c.stdin != nil {
 		cmd.SetStdin(c.stdin)
 	}
@@ -83,4 +108,12 @@ func (c *containerCmd) SetStdout(w io.Writer) exec.Cmd {
 func (c *containerCmd) SetStderr(w io.Writer) exec.Cmd {
 	c.stderr = w
 	return c
+}
+
+// IsTerminal returns true if the writer w is a terminal
+func IsTerminal(w io.Writer) bool {
+	if v, ok := (w).(*os.File); ok {
+		return terminal.IsTerminal(int(v.Fd()))
+	}
+	return false
 }

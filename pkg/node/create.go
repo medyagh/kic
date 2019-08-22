@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 
+	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/node/cri"
 	"github.com/medyagh/kic/pkg/oci"
 )
@@ -17,7 +18,7 @@ const (
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 )
 
-func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, extraArgs ...string) (handle *Node, err error) {
+func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cmder exec.Cmder, extraArgs ...string) (*Node, error) {
 	runArgs := []string{
 		"-d", // run the container detached
 		"-t", // allocate a tty for entrypoint logs
@@ -66,17 +67,18 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 	)
 
 	// we should return a handle so the caller can clean it up
-	handle = FromName(name)
+	node := FromName(name)
+	node.cmder = cmder
 	if err != nil {
-		return handle, fmt.Errorf("docker run error %v", err)
+		return node, fmt.Errorf("docker run error %v", err)
 	}
 
-	return handle, nil
+	return node, nil
 }
 
 // CreateControlPlaneNode creates a contol-plane node
 // and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping) (node *Node, err error) {
+func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cmder exec.Cmder) (node *Node, err error) {
 	// add api server port mapping
 	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
 		ListenAddress: listenAddress,
@@ -84,7 +86,7 @@ func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, por
 		ContainerPort: 6443,
 	})
 	node, err = CreateNode(
-		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer,
+		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cmder,
 		// publish selected port for the API server
 		"--expose", fmt.Sprintf("%d", port),
 	)
@@ -96,7 +98,6 @@ func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, por
 	node.cache.set(func(cache *nodeCache) {
 		cache.ports = map[int32]int32{6443: port}
 	})
-
 	return node, nil
 }
 

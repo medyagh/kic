@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/medyagh/kic/example/single_node/mycmder"
 	"github.com/medyagh/kic/pkg/image"
 	"github.com/medyagh/kic/pkg/kube"
 	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/node/cri"
 	"github.com/medyagh/kic/pkg/oci"
 	"github.com/phayes/freeport"
-
 	"k8s.io/klog"
 )
 
@@ -47,7 +47,7 @@ func main() {
 		}
 
 		// create node
-		node, _ := ns.Create()
+		node, _ := ns.Create(mycmder.New(ns.Name))
 
 		ip, _, _ := node.IP()
 
