@@ -23,7 +23,6 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/version"
-	"k8s.io/klog"
 )
 
 // ConfigData is supplied to the kubeadm config template, with values populated
@@ -72,7 +71,6 @@ func (c *ConfigData) Derive() {
 
 // templateExec executes the right kubeadm config template based on config data
 func templateExec(data ConfigData) (config string, err error) {
-	klog.Infof("Configuration Input data: %v", data)
 	ver, err := version.ParseGeneric(data.KubernetesVersion)
 	if err != nil {
 		return "", err
@@ -102,6 +100,5 @@ func templateExec(data ConfigData) (config string, err error) {
 	if err != nil {
 		return "", errors.Wrap(err, "error executing config template")
 	}
-	klog.Infof("Configuration generated:\n %v", buff.String())
 	return buff.String(), nil
 }

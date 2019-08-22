@@ -24,7 +24,7 @@ type Node struct {
 func (n *Node) WriteFile(dest, content string) error {
 	// create destination directory
 	cmd := n.Command("mkdir", "-p", filepath.Dir(dest))
-	err := exec.RunLoggingOutputOnFail(cmd)
+	_, err := exec.RunLoggingOutputOnFail(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", dest)
 	}

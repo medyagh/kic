@@ -3,8 +3,6 @@ package exec
 import (
 	"io"
 	osexec "os/exec"
-
-	"k8s.io/klog"
 )
 
 // LocalCmd wraps os/exec.Cmd, implementing the kind/pkg/exec.Cmd interface
@@ -52,6 +50,5 @@ func (cmd *LocalCmd) SetStderr(w io.Writer) Cmd {
 
 // Run runs
 func (cmd *LocalCmd) Run() error {
-	klog.Infof("Running: %v %v", cmd.Path, cmd.Args)
 	return cmd.Cmd.Run()
 }

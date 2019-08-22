@@ -3,7 +3,6 @@ package oci
 import (
 	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/node/cri"
-	"k8s.io/klog"
 )
 
 // RunOpt is an option for Run
@@ -18,7 +17,7 @@ type runOpts struct {
 }
 
 // Run creates a container with "docker run", with some error handling
-func Run(image string, opts ...RunOpt) error {
+func Run(image string, opts ...RunOpt) ([]string, error) {
 	o := &runOpts{}
 	for _, opt := range opts {
 		o = opt(o)
@@ -39,13 +38,9 @@ func Run(image string, opts ...RunOpt) error {
 	cmd := exec.Command(DefaultOCI, args...)
 	output, err := exec.CombinedOutputLines(cmd)
 	if err != nil {
-		// log error output if there was any
-		for _, line := range output {
-			klog.Error(line)
-		}
-		return err
+		return output, err
 	}
-	return nil
+	return output, nil
 }
 
 // WithRunArgs sets the args for docker run

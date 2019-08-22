@@ -1,10 +1,10 @@
 package oci
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"k8s.io/klog"
 
 	"github.com/medyagh/kic/pkg/exec"
 )
@@ -13,8 +13,7 @@ import (
 func PullIfNotPresent(image string) (err error) {
 	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
 	if err := cmd.Run(); err == nil {
-		klog.Infof("Image: %s present locally", image)
-		return nil
+		return fmt.Errorf("PullIfNotPresent: image %s present locally : %v", image, err)
 	}
 
 	b := backoff.NewExponentialBackOff()
@@ -31,10 +30,9 @@ func PullIfNotPresent(image string) (err error) {
 
 // Pull pulls an image, retrying up to retries times
 func pull(image string) error {
-	klog.Infof("Trying to pulling image: %s ...", image)
 	err := exec.Command(DefaultOCI, "pull", image).Run()
 	if err != nil {
-		klog.Errorf("Temproary error : %v Trying again to pull image: %s ...", err, image)
+		return fmt.Errorf("error pull image %s : %v", image, err)
 	}
 	return err
 }

@@ -1,10 +1,6 @@
 package kube
 
 import (
-	"strings"
-
-	"k8s.io/klog"
-
 	"github.com/pkg/errors"
 
 	"github.com/medyagh/kic/pkg/exec"
@@ -12,7 +8,7 @@ import (
 )
 
 /// RunKubeadmInit runs kubeadm init on a node
-func RunKubeadmInit(node *node.Node, hostIP string, hostPort int32, profile string) error { // run kubeadm
+func RunKubeadmInit(node *node.Node, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
 	cmd := node.Command(
 		// init because this is the control plane node
 		"kubeadm", "init",
@@ -24,12 +20,11 @@ func RunKubeadmInit(node *node.Node, hostIP string, hostPort int32, profile stri
 		"--v=6",
 	)
 	lines, err := exec.CombinedOutputLines(cmd)
-	klog.Info(strings.Join(lines, "\n"))
 	if err != nil {
-		return errors.Wrap(err, "failed to init node with kubeadm")
+		return lines, errors.Wrap(err, "failed to init node with kubeadm")
 	}
 
-	return nil
+	return lines, nil
 }
 
 func RunTaint(n *node.Node) error {

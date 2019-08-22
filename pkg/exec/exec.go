@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"io"
 	"os"
-
-	"k8s.io/klog"
 )
 
 // Cmd abstracts over running a command somewhere, this is useful for testing
@@ -56,19 +54,13 @@ func InheritOutput(cmd Cmd) Cmd {
 }
 
 // RunLoggingOutputOnFail runs the cmd, logging error output if Run returns an error
-func RunLoggingOutputOnFail(cmd Cmd) error {
+func RunLoggingOutputOnFail(cmd Cmd) (string, error) {
 	var buff bytes.Buffer
 	cmd.SetStdout(&buff)
 	cmd.SetStderr(&buff)
 	err := cmd.Run()
-	if err != nil {
-		klog.Error("failed with:")
-		scanner := bufio.NewScanner(&buff)
-		for scanner.Scan() {
-			klog.Error(scanner.Text())
-		}
-	}
-	return err
+	scanner := bufio.NewScanner(&buff)
+	return string(scanner.Bytes()), err
 }
 
 // RunWithStdoutReader runs cmd with stdout piped to readerFunc
