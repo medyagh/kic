@@ -17,32 +17,6 @@ const (
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 )
 
-// CreateControlPlaneNode creates a contol-plane node
-// and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping) (node *Node, err error) {
-	// add api server port mapping
-	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
-		ListenAddress: listenAddress,
-		HostPort:      port,
-		ContainerPort: 6443,
-	})
-	node, err = CreateNode(
-		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer,
-		// publish selected port for the API server
-		"--expose", fmt.Sprintf("%d", port),
-	)
-	if err != nil {
-		return node, err
-	}
-
-	// stores the port mapping into the node internal state
-	node.cache.set(func(cache *nodeCache) {
-		cache.ports = map[int32]int32{6443: port}
-	})
-
-	return node, nil
-}
-
 func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, extraArgs ...string) (handle *Node, err error) {
 	runArgs := []string{
 		"-d", // run the container detached
@@ -98,6 +72,32 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 	}
 
 	return handle, nil
+}
+
+// CreateControlPlaneNode creates a contol-plane node
+// and gets ready for exposing the the API server
+func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping) (node *Node, err error) {
+	// add api server port mapping
+	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
+		ListenAddress: listenAddress,
+		HostPort:      port,
+		ContainerPort: 6443,
+	})
+	node, err = CreateNode(
+		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer,
+		// publish selected port for the API server
+		"--expose", fmt.Sprintf("%d", port),
+	)
+	if err != nil {
+		return node, err
+	}
+
+	// stores the port mapping into the node internal state
+	node.cache.set(func(cache *nodeCache) {
+		cache.ports = map[int32]int32{6443: port}
+	})
+
+	return node, nil
 }
 
 // FromName creates a node handle from the node' Name
