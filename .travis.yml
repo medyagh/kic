@@ -8,19 +8,10 @@ env:
   - IMAGE_NAME=medyagh/kic
   - DOCKER_USER=medyagh
   - secure: F/b1ZV8+22gg4y4cI7ej5LGCqmyQoby7h9Es0TR7gwKXvXJ0kGjttkj+EgRvXd8eA1Ie34RyuThAN9KCgJCJwCtIv7pPJNerDxX8HsMWlpoAatVSOLJ2cusAyOH/n0ftmNOOjyDNOHa3jbZ3iDY05RkqhJttmFs/YcpkbY90niM7OyWb1GyVFdBXR1js1a3ZvAB7KHrcMA3vS9DED4jPEPiiXRT0HDEdKbpIuoUkOtaj6mraczafR0SWKsQsx9ZwEvSIEozKwfSXSkGInD0rFNvFu7B2SfsVAlIuhl9mQcXXYdw7jqBt04sWy2Ft7aerv+uR9eG7RCDDhHdJB0toYxg4wHBRAVNOYI8YmZKfTfYUvw+12DAxr4I7EmqK+EOitu09EAcwOrMeHIr0Mexe3EZkART9Mr1YlRxb733knfEiXrW47XLhbQhgjhMqXwQaE2PVGT4UBx9E9s652pa0MHB9coWApbFZEuGmyELBoRJeRuHTqxIDa0WbqR3O45QMeyFXzKgA8UxCNU7jO2agpeKLIDulNakXWyCPxY0DlHNduqHXQiiII2if5YvI4kbM8xeq6FoYBzHoPQ/puC8algb1myq/Tx2g83VtePBQm0y8Cv46UhGTwMguUYDf+9XYTA368pmo3hQZ2D9acMyD/7V/YGUB4zCN7CvTWfqaU6g=
-before_install:
-- echo "Do nothing before install :) "
 before_script:
 - echo "Do nothing before script either "
 script:
 - ./e2e-test.sh
-- docker build --tag medyagh/kic:v1.15.0 --build-arg KUBE_VER=v1.15.0 .
-- docker build --tag medyagh/kic:v1.14.3 --build-arg KUBE_VER=v1.14.3 .
-- docker build --tag medyagh/kic:v1.13.7 --build-arg KUBE_VER=v1.13.7 .
-- docker build --tag medyagh/kic:v1.12.9 --build-arg KUBE_VER=v1.12.9 .
-- docker build --tag medyagh/kic:v1.11.10 --build-arg KUBE_VER=v1.11.10 .
-after_script:
-- docker images
 before_deploy:
 - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 

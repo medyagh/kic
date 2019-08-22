@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/exec"
-	"github.com/medyagh/kic/pkg/node/cri"
 )
 
 // can be podman
@@ -80,22 +80,18 @@ func generateMountBindings(mounts ...cri.Mount) []string {
 }
 
 // PullIfNotPresent pulls docker image if not present back off exponentially
-func PullIfNotPresent(image string) (err error) {
+func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) error {
 	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
-	if err := cmd.Run(); err == nil {
-		return fmt.Errorf("PullIfNotPresent: image %s present locally : %v", image, err)
+	err := cmd.Run()
+	if err == nil && forceUpdate == false {
+		return nil // if presents locally and not force
 	}
-
 	b := backoff.NewExponentialBackOff()
-	b.MaxElapsedTime = 3 * time.Minute
-
+	b.MaxElapsedTime = maxWait
 	f := func() error {
 		return pull(image)
 	}
-
-	err = backoff.Retry(f, b)
-
-	return err
+	return backoff.Retry(f, b)
 }
 
 // Pull pulls an image, retrying up to retries times

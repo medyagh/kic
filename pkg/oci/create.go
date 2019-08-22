@@ -1,8 +1,8 @@
 package oci
 
 import (
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/exec"
-	"github.com/medyagh/kic/pkg/node/cri"
 )
 
 // CreateOpt is an option for Create

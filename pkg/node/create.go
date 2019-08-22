@@ -3,8 +3,8 @@ package node
 import (
 	"fmt"
 
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/exec"
-	"github.com/medyagh/kic/pkg/node/cri"
 	"github.com/medyagh/kic/pkg/oci"
 )
 

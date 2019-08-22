@@ -1,6 +1,8 @@
 package node
 
-import "sync"
+import (
+	"sync"
+)
 
 // this is a separate struct so we can more easily ensure that this portion is
 // thread safe

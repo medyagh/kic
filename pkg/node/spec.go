@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/exec"
-	"github.com/medyagh/kic/pkg/node/cri"
 	"github.com/pkg/errors"
 )
 

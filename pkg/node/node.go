@@ -62,8 +62,3 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 func (n *Node) Command(command string, args ...string) exec.Cmd {
 	return n.cmder.Command(command, args...)
 }
-
-// // Cmder returns an exec.Cmder that runs on the node via docker exec
-// func (n *Node) Cmder() exec.Cmder {
-// 	return oci.ContainerCmder(n.name)
-// }

@@ -4,12 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/image"
 	"github.com/medyagh/kic/pkg/kube"
 	"github.com/medyagh/kic/pkg/node"
-	"github.com/medyagh/kic/pkg/node/cri"
 	"github.com/medyagh/kic/pkg/oci"
 	"github.com/phayes/freeport"
 	"k8s.io/klog"
@@ -41,7 +42,7 @@ func main() {
 
 	if *start {
 		fmt.Printf("Starting on port %d\n ", hostPort)
-		err := oci.PullIfNotPresent(imgSha)
+		err := oci.PullIfNotPresent(imgSha, false, time.Minute*3)
 		if err != nil {
 			klog.Errorf("Error pulling image %s", imgSha)
 		}
