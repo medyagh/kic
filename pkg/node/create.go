@@ -59,7 +59,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 		runArgs = append(runArgs, "--userns=host")
 	}
 
-	_, err = oci.Run(
+	_, err = oci.CreateContainer(
 		image,
 		oci.WithRunArgs(runArgs...),
 		oci.WithMounts(mounts),

@@ -5,20 +5,20 @@ import (
 	"github.com/medyagh/kic/pkg/node/cri"
 )
 
-// RunOpt is an option for Run
-type RunOpt func(*runOpts) *runOpts
+// CreateOpt is an option for Create
+type CreateOpt func(*createOpts) *createOpts
 
 // actual options struct
-type runOpts struct {
+type createOpts struct {
 	RunArgs       []string
 	ContainerArgs []string
 	Mounts        []cri.Mount
 	PortMappings  []cri.PortMapping
 }
 
-// Run creates a container with "docker run", with some error handling
-func Run(image string, opts ...RunOpt) ([]string, error) {
-	o := &runOpts{}
+// CreateContainer creates a container with "docker/podman run"
+func CreateContainer(image string, opts ...CreateOpt) ([]string, error) {
+	o := &createOpts{}
 	for _, opt := range opts {
 		o = opt(o)
 	}
@@ -45,24 +45,24 @@ func Run(image string, opts ...RunOpt) ([]string, error) {
 
 // WithRunArgs sets the args for docker run
 // as in the args portion of `docker run args... image containerArgs...`
-func WithRunArgs(args ...string) RunOpt {
-	return func(r *runOpts) *runOpts {
+func WithRunArgs(args ...string) CreateOpt {
+	return func(r *createOpts) *createOpts {
 		r.RunArgs = args
 		return r
 	}
 }
 
 // WithMounts sets the container mounts
-func WithMounts(mounts []cri.Mount) RunOpt {
-	return func(r *runOpts) *runOpts {
+func WithMounts(mounts []cri.Mount) CreateOpt {
+	return func(r *createOpts) *createOpts {
 		r.Mounts = mounts
 		return r
 	}
 }
 
 // WithPortMappings sets the container port mappings to the host
-func WithPortMappings(portMappings []cri.PortMapping) RunOpt {
-	return func(r *runOpts) *runOpts {
+func WithPortMappings(portMappings []cri.PortMapping) CreateOpt {
+	return func(r *createOpts) *createOpts {
 		r.PortMappings = portMappings
 		return r
 	}

@@ -1,8 +1,11 @@
 package config
 
-import "github.com/medyagh/kic/pkg/config/kustomize"
-import "github.com/medyagh/kic/pkg/node"
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	"github.com/medyagh/kic/pkg/config/kustomize"
+	"github.com/medyagh/kic/pkg/node"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // Cluster contains kind cluster configuration
 type Cluster struct {

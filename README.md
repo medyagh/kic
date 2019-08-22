@@ -10,5 +10,5 @@ To be used a a library
 - docker / podman.
 - Bring your own Command Runner.
 
- ### Total lines of code: 1844 
+ ### Total lines of code: 1814 
  (counted by  find . -name '*.go' | xargs wc -l)

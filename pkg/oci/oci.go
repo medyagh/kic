@@ -4,12 +4,34 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff"
+	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/node/cri"
 )
 
 // can be podman
 const DefaultOCI = "docker"
+
+// Inspect return low-level information on containers
+func Inspect(containerNameOrID, format string) ([]string, error) {
+	cmd := exec.Command(DefaultOCI, "inspect",
+		"-f", format,
+		containerNameOrID, // ... against the "node" container
+	)
+
+	return exec.CombinedOutputLines(cmd)
+}
+
+// NetworkInspect displays detailed information on one or more networks
+func NetworkInspect(networkNames []string, format string) ([]string, error) {
+	cmd := exec.Command("docker", "network", "inspect",
+		"-f", format,
+		strings.Join(networkNames, " "),
+	)
+	return exec.CombinedOutputLines(cmd)
+}
 
 /*
 This is adapated from:
@@ -55,6 +77,49 @@ func generateMountBindings(mounts ...cri.Mount) []string {
 		result = append(result, bind)
 	}
 	return result
+}
+
+// PullIfNotPresent pulls docker image if not present back off exponentially
+func PullIfNotPresent(image string) (err error) {
+	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
+	if err := cmd.Run(); err == nil {
+		return fmt.Errorf("PullIfNotPresent: image %s present locally : %v", image, err)
+	}
+
+	b := backoff.NewExponentialBackOff()
+	b.MaxElapsedTime = 3 * time.Minute
+
+	f := func() error {
+		return pull(image)
+	}
+
+	err = backoff.Retry(f, b)
+
+	return err
+}
+
+// Pull pulls an image, retrying up to retries times
+func pull(image string) error {
+	err := exec.Command(DefaultOCI, "pull", image).Run()
+	if err != nil {
+		return fmt.Errorf("error pull image %s : %v", image, err)
+	}
+	return err
+}
+
+// UsernsRemap checks if userns-remap is enabled in dockerd
+func UsernsRemap() bool {
+	cmd := exec.Command(DefaultOCI, "info", "--format", "'{{json .SecurityOptions}}'")
+	lines, err := exec.CombinedOutputLines(cmd)
+	if err != nil {
+		return false
+	}
+	if len(lines) > 0 {
+		if strings.Contains(lines[0], "name=userns") {
+			return true
+		}
+	}
+	return false
 }
 
 func generatePortMappings(portMappings ...cri.PortMapping) []string {
