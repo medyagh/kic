@@ -1,6 +1,13 @@
 #!/bin/bash
 set -eux -o pipefail
 
+if [[ -z "${CI}"] ]; then
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    chmod +x ./kubectl
+    sudo mv ./kubectl /usr/local/bin/kubectl
+fi
+ 
+
 # super simple just for quick e2e
 GO111MODULE=on go mod download
 cd example/single_node 
