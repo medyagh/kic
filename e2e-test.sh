@@ -21,13 +21,14 @@ export KUBECONFIG=$HOME/.kube/kic-config-m5
 sleep 3 
 kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=300s -n kube-system || true
 kubectl get pods -A || true
-kubectl wait pod -l component=kube-scheduler --for condition=Initialized --timeout=100s -n kube-system
-kubectl wait pod -l component=kube-scheduler --for condition=ContainersReady --timeout=100s -n kube-system
-kubectl get pods -A
+kubectl wait pod -l component=kube-scheduler --for condition=Initialized --timeout=100s -n kube-system || true
+kubectl wait pod -l component=kube-scheduler --for condition=ContainersReady --timeout=100s -n kube-system || true
+kubectl get pods -A || true
 kubectl wait pod -l component=kube-apiserver --for condition=Initialized --timeout=100s -n kube-system || true
 kubectl wait pod -l component=kube-apiserver --for condition=ContainersReady --timeout=100s -n kube-system || true
 kubectl wait pod -l component=kube-apiserver --for condition=PodScheduled --timeout=100s -n kube-system || true
 kubectl wait pod -l component=kube-apiserver --for condition=Ready --timeout=100s -n kube-system || true
+kubectl get pods -A || true
 kubectl wait pod -l component=etcd --for condition=Ready --timeout=100s -n kube-system || true
 
 kubectl run hello-minikube --image=k8s.gcr.io/echoserver:1.4 --port=8080
