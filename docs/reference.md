@@ -2,47 +2,46 @@
 
 ### config files
 
-/etc/kubernetes/bootstrap-kubelet.conf
-/var/lib/kubelet/config.yaml
-/etc/kubernetes/admin.conf
-/etc/kubernetes/controller-manager.conf
-/etc/kubernetes/kubelet.conf
-/etc/kubernetes/scheduler.conf
+- /etc/kubernetes/bootstrap-kubelet.conf
+- /var/lib/kubelet/config.yaml
+- /etc/kubernetes/admin.conf
+- /etc/kubernetes/controller-manager.conf
+- /etc/kubernetes/kubelet.conf
+- /etc/kubernetes/scheduler.conf
 
 
 ### manifests
-/etc/kubernetes/manifests/etcd.yaml
-/etc/kubernetes/manifests/kube-apiserver.yaml
-/etc/kubernetes/manifests/kube-controller-manager
+- /etc/kubernetes/manifests/etcd.yaml
+- /etc/kubernetes/manifests/kube-apiserver.yaml
+- /etc/kubernetes/manifests/kube-controller-manager
 
 
 ### certs
-
-/etc/kubernetes/pki/apiserver-etcd-client.crt
-/etc/kubernetes/pki/apiserver-etcd-client.key
-/etc/kubernetes/pki/apiserver-kubelet-client.crt
-/etc/kubernetes/pki/apiserver-kubelet-client.key
-/etc/kubernetes/pki/apiserver.crt
-/etc/kubernetes/pki/apiserver.key
-/etc/kubernetes/pki/ca.crt
-/etc/kubernetes/pki/ca.key
-/etc/kubernetes/pki/front-proxy-ca.crt
-/etc/kubernetes/pki/front-proxy-ca.key
-/etc/kubernetes/pki/front-proxy-client.crt
-/etc/kubernetes/pki/front-proxy-client.key
-/etc/kubernetes/pki/sa.key
-/etc/kubernetes/pki/sa.pub
+- /etc/kubernetes/pki/apiserver-etcd-client.crt
+- /etc/kubernetes/pki/apiserver-etcd-client.key
+- /etc/kubernetes/pki/apiserver-kubelet-client.crt
+- /etc/kubernetes/pki/apiserver-kubelet-client.key
+- /etc/kubernetes/pki/apiserver.crt
+- /etc/kubernetes/pki/apiserver.key
+- /etc/kubernetes/pki/ca.crt
+- /etc/kubernetes/pki/ca.key
+- /etc/kubernetes/pki/front-proxy-ca.crt
+- /etc/kubernetes/pki/front-proxy-ca.key
+- /etc/kubernetes/pki/front-proxy-client.crt
+- /etc/kubernetes/pki/front-proxy-client.key
+- /etc/kubernetes/pki/sa.key
+- /etc/kubernetes/pki/sa.pub
 
 
 ### etcd certs
-/etc/kubernetes/pki/etcd/ca.crt
-/etc/kubernetes/pki/etcd/ca.key
-/etc/kubernetes/pki/etcd/healthcheck-client.crt
-/etc/kubernetes/pki/etcd/healthcheck-client.key
-/etc/kubernetes/pki/etcd/peer.crt
-/etc/kubernetes/pki/etcd/peer.key
-/etc/kubernetes/pki/etcd/server.crt
-/etc/kubernetes/pki/etcd/server.key
+- /etc/kubernetes/pki/etcd/ca.crt
+- /etc/kubernetes/pki/etcd/ca.key
+- /etc/kubernetes/pki/etcd/healthcheck-client.crt
+- /etc/kubernetes/pki/etcd/healthcheck-client.key
+- /etc/kubernetes/pki/etcd/peer.crt
+- /etc/kubernetes/pki/etcd/peer.key
+- /etc/kubernetes/pki/etcd/server.crt
+- /etc/kubernetes/pki/etcd/server.key
 
 
 ### containerd socket
