@@ -1,13 +1,15 @@
 #!/bin/bash
 set -eux -o pipefail
 
-if [[ ! -z "${INSIDE_TRAVIS}" ]]; then
+ if ! kubectl version &>/dev/null; then
+    echo "WARNING: No kubectl installation found in your enviroment."
     curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
     chmod +x ./kubectl
     sudo mv ./kubectl /usr/local/bin/kubectl
 fi
- 
 
+
+ 
 # super simple just for quick e2e
 GO111MODULE=on go mod download
 cd example/single_node 
@@ -16,12 +18,12 @@ lsof -ti tcp:8080 | xargs kill || true
 ./single_node -delete -profile m5
 ./single_node -start -profile m5
 export KUBECONFIG=/Users/medmac/.kube/kic-config-m5
+kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=100s -n kube-system
 kubectl get pods -A
-sleep 10
 kubectl run hello-minikube --image=k8s.gcr.io/echoserver:1.4 --port=8080
 kubectl expose deployment hello-minikube --type=NodePort
-sleep 25
+kubectl wait deployment -l run=hello-minikube --for condition=available --timeout=100s
 kubectl port-forward service/hello-minikube 8080 &
-sleep 20
+sleep 3
 curl http://localhost:8080/
 lsof -ti tcp:8080 | xargs kill || true
