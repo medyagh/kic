@@ -160,16 +160,6 @@ users:
 
 
 
-
-<details>
-<pre>
-
-</pre>
-</details>
-
-
-
-
 ### cat /etc/kubernetes/scheduler.conf
 <details>
 <pre>
