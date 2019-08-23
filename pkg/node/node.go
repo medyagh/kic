@@ -21,7 +21,7 @@ type Node struct {
 }
 
 // WriteFile writes content to dest on the node
-func (n *Node) WriteFile(dest, content string) error {
+func (n *Node) WriteFile(dest, content string, perm string) error {
 	// create destination directory
 	cmd := n.Command("mkdir", "-p", filepath.Dir(dest))
 	_, err := exec.RunLoggingOutputOnFail(cmd)
@@ -29,7 +29,12 @@ func (n *Node) WriteFile(dest, content string) error {
 		return errors.Wrapf(err, "failed to create directory %s", dest)
 	}
 
-	return n.Command("cp", "/dev/stdin", dest).SetStdin(strings.NewReader(content)).Run()
+	err = n.Command("cp", "/dev/stdin", dest).SetStdin(strings.NewReader(content)).Run()
+	if err != nil {
+		return errors.Wrapf(err, "failed to run: cp /dev/stdin %s", dest)
+	}
+	err = n.Command("chmod", perm, dest).Run()
+	return errors.Wrapf(err, "failed to run: chmod %s %s", perm, dest)
 }
 
 // IP returns the IP address of the node

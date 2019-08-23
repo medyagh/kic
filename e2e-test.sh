@@ -31,10 +31,18 @@ kubectl wait pod -l component=kube-apiserver --for condition=Ready --timeout=100
 kubectl get pods -A || true
 kubectl wait pod -l component=etcd --for condition=Ready --timeout=100s -n kube-system || true
 
+# test service
 kubectl run hello-minikube --image=k8s.gcr.io/echoserver:1.4 --port=8080
 kubectl expose deployment hello-minikube --type=NodePort
 kubectl wait deployment -l run=hello-minikube --for condition=available --timeout=100s
 kubectl port-forward service/hello-minikube 8080 &
 sleep 3
 curl http://localhost:8080/
+
+
+# test file content and perm
+docker exec m5control-plane cat /kic/kubeadm.conf | grep  apiServerEndpoint
+docker exec m5control-plane stat -c '%a' kic/kubeadm.conf | grep 644
+# todo check if it is right permission
+
 lsof -ti tcp:8080 | xargs kill || true

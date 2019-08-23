@@ -10,7 +10,7 @@ import (
 	"github.com/medyagh/kic/pkg/node"
 )
 
-// InstallCNI installs CNI duuh :)
+// InstallCNI installs CNI
 func InstallCNI(n *node.Node, subnet string) error {
 	// read the manifest from the node
 	var raw bytes.Buffer
