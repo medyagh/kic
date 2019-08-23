@@ -18,7 +18,9 @@ lsof -ti tcp:8080 | xargs kill || true
 ./single_node -delete -profile m5
 ./single_node -start -profile m5
 export KUBECONFIG=/Users/medmac/.kube/kic-config-m5
-kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=100s -n kube-system
+sleep 3 
+kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=120s -n kube-system
+kubectl wait pod -l component=etcd --for condition=ready --timeout=100s -n kube-system
 kubectl get pods -A
 kubectl run hello-minikube --image=k8s.gcr.io/echoserver:1.4 --port=8080
 kubectl expose deployment hello-minikube --type=NodePort
