@@ -68,7 +68,6 @@ func main() {
 		kCfg, _ := kube.KubeAdmCfg(cfg)
 
 		// copy the config to the node
-
 		if err := node.WriteFile(kube.KubeAdmCfgPath, kCfg); err != nil {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}

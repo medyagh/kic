@@ -19,8 +19,8 @@ lsof -ti tcp:8080 | xargs kill || true
 ./single_node -start -profile m5
 export KUBECONFIG=$HOME/.kube/kic-config-m5
 sleep 3 
-kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=120s -n kube-system
-kubectl get pods -A
+kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=300s -n kube-system || true
+kubectl get pods -A || true
 kubectl wait pod -l component=kube-scheduler --for condition=Initialized --timeout=100s -n kube-system
 kubectl wait pod -l component=kube-scheduler --for condition=ContainersReady --timeout=100s -n kube-system
 kubectl get pods -A
