@@ -36,6 +36,7 @@ func InstallCNI(n *node.Node, subnet string) error {
 		manifest = out.String()
 	}
 
+	// TODO: move this to a reusable func
 	// install the manifest
 	if err := n.Command(
 		"kubectl", "create", "--kubeconfig=/etc/kubernetes/admin.conf",

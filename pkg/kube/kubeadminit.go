@@ -14,7 +14,7 @@ func RunKubeadmInit(node *node.Node, hostIP string, hostPort int32, profile stri
 		"kubeadm", "init",
 		"--ignore-preflight-errors=all",
 		// specify our generated config file
-		"--config=/kind/kubeadm.conf",
+		"--config=/kic/kubeadm.conf",
 		"--skip-token-print",
 		// increase verbosity for debugging
 		"--v=6",

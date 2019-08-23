@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Node represents a handle to a kind node
+// Node represents a handle to a kic node
 // This struct must be created by one of: CreateControlPlane
 type Node struct {
 	// must be one of docker container ID or name

@@ -7,12 +7,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Cluster contains kind cluster configuration
+// Cluster contains cluster configuration
 type Cluster struct {
 	// TypeMeta representing the type of the object and its API schema version.
 	metav1.TypeMeta `json:",inline"`
 
-	// Nodes contains the list of nodes defined in the `kind` Cluster
+	// Nodes contains the list of nodes defined in the `kic` Cluster
 	// If unset this will default to a single control-plane node
 	// Note that if more than one control plane is specified, an external
 	// control plane load balancer will be provisioned implicitly
@@ -47,12 +47,12 @@ type Networking struct {
 	// Defaults to 127.0.0.1
 	APIServerAddress string `json:"apiServerAddress,omitempty"`
 	// PodSubnet is the CIDR used for pod IPs
-	// kind will select a default if unspecified
+	// kicd will select a default if unspecified
 	PodSubnet string `json:"podSubnet,omitempty"`
 	// ServiceSubnet is the CIDR used for services VIPs
-	// kind will select a default if unspecified for IPv6
+	// kinc will select a default if unspecified for IPv6
 	ServiceSubnet string `json:"serviceSubnet,omitempty"`
-	// If DisableDefaultCNI is true, kind will not install the default CNI setup.
+	// If DisableDefaultCNI is true, kic will not install the default CNI setup.
 	// Instead the user should install their own CNI after creating the cluster.
 	DisableDefaultCNI bool `json:"disableDefaultCNI,omitempty"`
 }
