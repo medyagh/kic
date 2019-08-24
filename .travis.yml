@@ -22,4 +22,6 @@ deploy:
   script: bash docker_push.sh
   on:
     branch: release
-    
+
+notifications:
+  webhooks: https://www.travisbuddy.com/
