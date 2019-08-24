@@ -1,6 +1,7 @@
 package node
 
 import (
+	"io"
 	"path/filepath"
 	"strings"
 
@@ -61,6 +62,18 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 		cache.ipv6 = ips[1]
 	})
 	return ips[0], ips[1], nil
+}
+
+// LoadImageArchive loads an image form archive into node
+func (n *Node) LoadImageArchive(image io.Reader) error {
+	cmd := n.Command(
+		"ctr", "--namespace=k8s.io", "images", "import", "-",
+	)
+	cmd.SetStdin(image)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to load image")
+	}
+	return nil
 }
 
 // Command returns a new runner.Cmd that will run on the node
