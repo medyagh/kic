@@ -8,7 +8,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/exec"
+	"sigs.k8s.io/kind/pkg/exec"
 )
 
 // can be podman

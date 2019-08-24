@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/oci"
+	"github.com/medyagh/kic/pkg/runner"
 
 	"github.com/pkg/errors"
 )
@@ -17,14 +17,14 @@ type Node struct {
 	name string
 	// cached node info etc.
 	cache *nodeCache
-	cmder exec.Cmder
+	cmder runner.Cmder
 }
 
 // WriteFile writes content to dest on the node
 func (n *Node) WriteFile(dest, content string, perm string) error {
 	// create destination directory
 	cmd := n.Command("mkdir", "-p", filepath.Dir(dest))
-	_, err := exec.RunLoggingOutputOnFail(cmd)
+	_, err := runner.RunLoggingOutputOnFail(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", dest)
 	}
@@ -63,7 +63,7 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 	return ips[0], ips[1], nil
 }
 
-// Command returns a new exec.Cmd that will run on the node
-func (n *Node) Command(command string, args ...string) exec.Cmd {
+// Command returns a new runner.Cmd that will run on the node
+func (n *Node) Command(command string, args ...string) runner.Cmd {
 	return n.cmder.Command(command, args...)
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/oci"
+	"github.com/medyagh/kic/pkg/runner"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 )
 
-func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cmder exec.Cmder, extraArgs ...string) (*Node, error) {
+func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
 	runArgs := []string{
 		"-d", // run the container detached
 		"-t", // allocate a tty for entrypoint logs
@@ -78,7 +78,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 
 // CreateControlPlaneNode creates a contol-plane node
 // and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cmder exec.Cmder) (node *Node, err error) {
+func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cmder runner.Cmder) (node *Node, err error) {
 	// add api server port mapping
 	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
 		ListenAddress: listenAddress,

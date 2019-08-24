@@ -2,7 +2,7 @@ package oci
 
 import (
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/exec"
+	"sigs.k8s.io/kind/pkg/exec"
 )
 
 // CreateOpt is an option for Create

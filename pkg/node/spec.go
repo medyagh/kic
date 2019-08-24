@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/exec"
+	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 )
 
@@ -23,7 +23,7 @@ type Spec struct {
 	IPv6              bool
 }
 
-func (d *Spec) Create(cmder exec.Cmder) (node *Node, err error) {
+func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	switch d.Role {
 	case "control-plane":
 		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, cmder)
@@ -35,8 +35,8 @@ func (d *Spec) Create(cmder exec.Cmder) (node *Node, err error) {
 }
 
 func (d *Spec) Stop() error {
-	cmd := exec.Command("docker", "pause", d.Name)
-	_, err := exec.CombinedOutputLines(cmd)
+	cmd := runner.Command("docker", "pause", d.Name)
+	_, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "stopping node")
 	}
@@ -44,8 +44,8 @@ func (d *Spec) Stop() error {
 }
 
 func (d *Spec) Delete() error {
-	cmd := exec.Command("docker", "rm", "-f", "-v", d.Name)
-	_, err := exec.CombinedOutputLines(cmd)
+	cmd := runner.Command("docker", "rm", "-f", "-v", d.Name)
+	_, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "deleting node")
 	}
@@ -64,8 +64,8 @@ func (d *Spec) ListNodes() ([]string, error) {
 		// format to include friendly name and the cluster name
 		"--format", fmt.Sprintf(`{{.Names}}\t{{.Label "%s"}}`, ClusterLabelKey+d.Profile),
 	}
-	cmd := exec.Command("docker", args...)
-	lines, err := exec.CombinedOutputLines(cmd)
+	cmd := runner.Command("docker", args...)
+	lines, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to list containers for %s", d.Profile))
 

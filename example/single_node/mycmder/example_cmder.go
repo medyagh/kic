@@ -4,28 +4,28 @@ import (
 	"io"
 	"os"
 
-	"github.com/medyagh/kic/pkg/exec"
+	"github.com/medyagh/kic/pkg/runner"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// exampale of bringing your own exec.Cmder
+// exampale of bringing your own runner.Cmder
 
 const defaultOCI = "docker"
 
-// New creates a new implementor of exec.Cmder
-func New(containerNameOrID string) exec.Cmder {
+// New creates a new implementor of runner.Cmder
+func New(containerNameOrID string) runner.Cmder {
 	return &containerCmder{
 		nameOrID: containerNameOrID,
 	}
 }
 
-// containerCmder implements exec.Cmder for docker containers
+// containerCmder implements runner.Cmder for docker containers
 type containerCmder struct {
 	nameOrID string
 }
 
-func (c *containerCmder) Command(command string, args ...string) exec.Cmd {
+func (c *containerCmder) Command(command string, args ...string) runner.Cmd {
 	return &containerCmd{
 		nameOrID: c.nameOrID,
 		command:  command,
@@ -33,7 +33,7 @@ func (c *containerCmder) Command(command string, args ...string) exec.Cmd {
 	}
 }
 
-// containerCmd implements exec.Cmd for docker containers
+// containerCmd implements runner.Cmd for docker containers
 type containerCmd struct {
 	nameOrID string // the container name or ID
 	command  string
@@ -77,7 +77,7 @@ func (c *containerCmd) Run() error {
 		// finally, with the caller args
 		c.args...,
 	)
-	cmd := exec.Command(defaultOCI, args...)
+	cmd := runner.Command(defaultOCI, args...)
 	if c.stdin != nil {
 		cmd.SetStdin(c.stdin)
 	}
@@ -90,22 +90,22 @@ func (c *containerCmd) Run() error {
 	return cmd.Run()
 }
 
-func (c *containerCmd) SetEnv(env ...string) exec.Cmd {
+func (c *containerCmd) SetEnv(env ...string) runner.Cmd {
 	c.env = env
 	return c
 }
 
-func (c *containerCmd) SetStdin(r io.Reader) exec.Cmd {
+func (c *containerCmd) SetStdin(r io.Reader) runner.Cmd {
 	c.stdin = r
 	return c
 }
 
-func (c *containerCmd) SetStdout(w io.Writer) exec.Cmd {
+func (c *containerCmd) SetStdout(w io.Writer) runner.Cmd {
 	c.stdout = w
 	return c
 }
 
-func (c *containerCmd) SetStderr(w io.Writer) exec.Cmd {
+func (c *containerCmd) SetStderr(w io.Writer) runner.Cmd {
 	c.stderr = w
 	return c
 }

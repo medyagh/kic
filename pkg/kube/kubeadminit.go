@@ -3,8 +3,8 @@ package kube
 import (
 	"github.com/pkg/errors"
 
-	"github.com/medyagh/kic/pkg/exec"
 	"github.com/medyagh/kic/pkg/node"
+	"github.com/medyagh/kic/pkg/runner"
 )
 
 /// RunKubeadmInit runs kubeadm init on a node
@@ -19,7 +19,7 @@ func RunKubeadmInit(node *node.Node, kubeadmCfgPath string, hostIP string, hostP
 		// increase verbosity for debugging
 		"--v=6",
 	)
-	lines, err := exec.CombinedOutputLines(cmd)
+	lines, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return lines, errors.Wrap(err, "failed to init node with kubeadm")
 	}

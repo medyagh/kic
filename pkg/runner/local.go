@@ -1,11 +1,11 @@
-package exec
+package runner
 
 import (
 	"io"
 	osexec "os/exec"
 )
 
-// LocalCmd wraps os/exec.Cmd, implementing the exec.Cmd interface
+// LocalCmd wraps os/runner.Cmd, implementing the runner.Cmd interface
 type LocalCmd struct {
 	*osexec.Cmd
 }
@@ -17,7 +17,7 @@ type LocalCmder struct{}
 
 var _ Cmder = &LocalCmder{}
 
-// Command returns a new exec.Cmd backed by Cmd
+// Command returns a new runner.Cmd backed by Cmd
 func (c *LocalCmder) Command(name string, arg ...string) Cmd {
 	return &LocalCmd{
 		Cmd: osexec.Command(name, arg...),

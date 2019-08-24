@@ -32,7 +32,17 @@ func main() {
 
 	imgSha, _ := image.NameForVersion(*kubeVersion)
 
-	ns := newNodeSpec(*profile, imgSha, *hostIP, hostPort)
+	ns := &node.Spec{
+		Profile:           *profile,
+		Name:              *profile + "control-plane",
+		Image:             imgSha,
+		Role:              "control-plane",
+		ExtraMounts:       []cri.Mount{},
+		ExtraPortMappings: []cri.PortMapping{},
+		APIServerAddress:  *hostIP,
+		APIServerPort:     hostPort,
+		IPv6:              false,
+	}
 
 	if *delete {
 		fmt.Printf("Deleting ... %s\n", *profile)
@@ -81,18 +91,4 @@ func main() {
 
 	}
 
-}
-
-func newNodeSpec(profile string, imgSHA string, hostIP string, hostPort int32) *node.Spec {
-	return &node.Spec{
-		Profile:           profile,
-		Name:              profile + "control-plane",
-		Image:             imgSHA,
-		Role:              "control-plane",
-		ExtraMounts:       []cri.Mount{},
-		ExtraPortMappings: []cri.PortMapping{},
-		APIServerAddress:  hostIP,
-		APIServerPort:     hostPort,
-		IPv6:              false,
-	}
 }
