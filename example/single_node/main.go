@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
@@ -23,6 +24,7 @@ func main() {
 	cpus := flag.String("cpu", "2", "number of cpus to dedicate to the node")
 	memory := flag.String("memory", "2000m", "memory")
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
+	img := flag.String("image", "", "image to load")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -82,6 +84,20 @@ func main() {
 		kube.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
 		kube.RunTaint(node)
 		kube.InstallCNI(node, "10.244.0.0/16")
+
+		if len(*img) != 0 {
+			fmt.Printf("loading image %s\n", *img)
+			f, err := os.Open(*img)
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer f.Close()
+			err = node.LoadImageArchive(f)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+
 		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		// kubeconfig for end-user
 		kube.WriteKubeConfig(c, *profile)
@@ -90,7 +106,5 @@ func main() {
 	if *delete {
 		fmt.Printf("Deleting ... %s\n", *profile)
 		ns.Delete()
-
 	}
-
 }
