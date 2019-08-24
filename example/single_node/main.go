@@ -66,16 +66,16 @@ func main() {
 		}
 
 		kCfg, _ := kube.KubeAdmCfg(cfg)
-
+		kaCfgPath := "/kic/kubeadm.conf"
 		// copy the config to the node
-		if err := node.WriteFile(kube.KubeAdmCfgPath, kCfg, "644"); err != nil {
+		if err := node.WriteFile(kaCfgPath, kCfg, "644"); err != nil {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		kube.RunKubeadmInit(node, *hostIP, hostPort, *profile)
+		kube.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
 		kube.RunTaint(node)
-		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		kube.InstallCNI(node, "10.244.0.0/16")
+		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		// kubeconfig for end-user
 		kube.WriteKubeConfig(c, *profile)
 

@@ -292,7 +292,7 @@ status: {}
 
 <details>
 <pre>
-
+```
 # kindnetd networking manifest
 # would you kindly template this file
 ---
@@ -438,5 +438,6 @@ spec:
           hostPath:
             path: /etc/cni/net.d
 ---
+```
 </pre>
 </details>

@@ -8,13 +8,13 @@ import (
 )
 
 /// RunKubeadmInit runs kubeadm init on a node
-func RunKubeadmInit(node *node.Node, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
+func RunKubeadmInit(node *node.Node, kubeadmCfgPath string, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
 	cmd := node.Command(
 		// init because this is the control plane node
 		"kubeadm", "init",
 		"--ignore-preflight-errors=all",
 		// specify our generated config file
-		"--config=/kic/kubeadm.conf",
+		"--config="+kubeadmCfgPath,
 		"--skip-token-print",
 		// increase verbosity for debugging
 		"--v=6",
