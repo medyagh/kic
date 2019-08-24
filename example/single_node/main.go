@@ -21,7 +21,7 @@ func main() {
 	start := flag.Bool("start", false, "to start")
 	hostIP := flag.String("host-ip", "127.0.0.1", "node's ip")
 	cpus := flag.String("cpu", "2", "number of cpus to dedicate to the node")
-	memory := flag.String("memory", "512m", "memory")
+	memory := flag.String("memory", "2000m", "memory")
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
 
 	flag.Parse()
