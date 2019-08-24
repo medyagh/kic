@@ -18,8 +18,10 @@ const (
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 )
 
-func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
+func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
 	runArgs := []string{
+		fmt.Sprintf("--cpus=%s", cpus),
+		fmt.Sprintf("--memory=%s", memory),
 		"-d", // run the container detached
 		"-t", // allocate a tty for entrypoint logs
 		// running containers in a container requires privileged
@@ -78,7 +80,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 
 // CreateControlPlaneNode creates a contol-plane node
 // and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cmder runner.Cmder) (node *Node, err error) {
+func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, cmder runner.Cmder) (node *Node, err error) {
 	// add api server port mapping
 	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
 		ListenAddress: listenAddress,
@@ -86,7 +88,7 @@ func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, por
 		ContainerPort: 6443,
 	})
 	node, err = CreateNode(
-		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cmder,
+		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cpus, memory, cmder,
 		// publish selected port for the API server
 		"--expose", fmt.Sprintf("%d", port),
 	)

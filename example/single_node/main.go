@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
@@ -21,13 +20,15 @@ func main() {
 	delete := flag.Bool("delete", false, "to delete")
 	start := flag.Bool("start", false, "to start")
 	hostIP := flag.String("host-ip", "127.0.0.1", "node's ip")
+	cpus := flag.String("cpu", "2", "number of cpus to dedicate to the node")
+	memory := flag.String("memory", "512m", "memory")
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
 	hostPort := int32(p)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	imgSha, _ := image.NameForVersion(*kubeVersion)
@@ -36,18 +37,14 @@ func main() {
 		Profile:           *profile,
 		Name:              *profile + "control-plane",
 		Image:             imgSha,
+		CPUs:              *cpus,
+		Memory:            *memory,
 		Role:              "control-plane",
 		ExtraMounts:       []cri.Mount{},
 		ExtraPortMappings: []cri.PortMapping{},
 		APIServerAddress:  *hostIP,
 		APIServerPort:     hostPort,
 		IPv6:              false,
-	}
-
-	if *delete {
-		fmt.Printf("Deleting ... %s\n", *profile)
-		ns.Delete()
-
 	}
 
 	if *start {
@@ -88,6 +85,11 @@ func main() {
 		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		// kubeconfig for end-user
 		kube.WriteKubeConfig(c, *profile)
+	}
+
+	if *delete {
+		fmt.Printf("Deleting ... %s\n", *profile)
+		ns.Delete()
 
 	}
 

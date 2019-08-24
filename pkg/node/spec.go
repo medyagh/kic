@@ -15,7 +15,9 @@ type Spec struct {
 	Name              string
 	Profile           string
 	Role              string
-	Image             string
+	Image             string // for example  4000mb based on https://docs.docker.com/config/containers/resource_constraints/
+	CPUs              string // for example 2
+	Memory            string
 	ExtraMounts       []cri.Mount
 	ExtraPortMappings []cri.PortMapping
 	APIServerPort     int32
@@ -26,7 +28,7 @@ type Spec struct {
 func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	switch d.Role {
 	case "control-plane":
-		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, cmder)
+		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, d.CPUs, d.Memory, cmder)
 		return node, err
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)

@@ -7,6 +7,7 @@ To be used a a library
 ## Features
 - multiple kubernetes version suported.
 - multiple profiles.
+- set number of cpus/ram for the cluster.
 - start / stop / pause.
 - docker / podman.
 - Bring your own Command Runner.
