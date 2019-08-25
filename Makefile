@@ -14,4 +14,7 @@ lint: out/linters/golangci-lint
 	./out/linters/golangci-lint run ${GOLINT_OPTIONS} ./...
 
 
-.PHONY: image push-image test
+out/e2e:
+	GO111MODULE=on go mod download
+	mkdir -p out
+	GO111MODULE=on go build -o ./out/e2e example/single_node/main.go 
