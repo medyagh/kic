@@ -98,12 +98,12 @@ func main() {
 			fmt.Printf("loading image %s\n", *img)
 			f, err := os.Open(*img)
 			if err != nil {
-				fmt.Println(err)
+				klog.Errorf("error reading image (%s) from disk : %v", *img, err)
 			}
 			defer f.Close()
 			err = node.LoadImageArchive(f)
 			if err != nil {
-				fmt.Println(err)
+				klog.Errorf("error loading (%s) into the node : %v", *img, err)
 			}
 		}
 
