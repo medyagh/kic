@@ -1,4 +1,4 @@
-package config
+package cluster
 
 import (
 	"github.com/medyagh/kic/pkg/config/kustomize"
@@ -7,8 +7,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Cluster contains cluster configuration
-type Cluster struct {
+// Config contains cluster configuration
+type Config struct {
 	// TypeMeta representing the type of the object and its API schema version.
 	metav1.TypeMeta `json:",inline"`
 
