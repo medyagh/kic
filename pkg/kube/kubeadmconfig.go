@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/medyagh/kic/pkg/config"
+	"github.com/medyagh/kic/pkg/cluster"
 	"github.com/medyagh/kic/pkg/config/kustomize"
 )
 
 func KubeAdmCfg(cd ConfigData) (string, error) {
-	clusterCfg := &config.Cluster{}
+	clusterCfg := &cluster.Config{}
 	config, err := templateExec(cd)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func removeMetadata(kustomized string) string {
 	)
 }
 
-func allPatchesFromConfig(cfg *config.Cluster) (patches []string, jsonPatches []kustomize.PatchJSON6902) {
+func allPatchesFromConfig(cfg *cluster.Config) (patches []string, jsonPatches []kustomize.PatchJSON6902) {
 	return cfg.KubeadmConfigPatches, cfg.KubeadmConfigPatchesJSON6902
 }
 

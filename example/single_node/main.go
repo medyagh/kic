@@ -57,9 +57,15 @@ func main() {
 		}
 
 		// create node
-		node, _ := ns.Create(mycmder.New(ns.Name))
+		node, err := ns.Create(mycmder.New(ns.Name))
+		if err != nil {
+			klog.Errorf("Error Creating node %s %v", ns.Name, err)
+		}
 
-		ip, _, _ := node.IP()
+		ip, _, err := node.IP()
+		if err != nil {
+			klog.Errorf("Error getting node ip: %s error: %v", ip, err)
+		}
 
 		cfg := kube.ConfigData{
 			ClusterName:          *profile,
@@ -74,7 +80,10 @@ func main() {
 			IPv6:                 false,
 		}
 
-		kCfg, _ := kube.KubeAdmCfg(cfg)
+		kCfg, err := kube.KubeAdmCfg(cfg)
+		if err != nil {
+			klog.Errorf("failed to generate kubeaddm  error: %v , kCfg :\n %+v", err, kCfg)
+		}
 		kaCfgPath := "/kic/kubeadm.conf"
 		// copy the config to the node
 		if err := node.WriteFile(kaCfgPath, kCfg, "644"); err != nil {
@@ -89,12 +98,12 @@ func main() {
 			fmt.Printf("loading image %s\n", *img)
 			f, err := os.Open(*img)
 			if err != nil {
-				fmt.Println(err)
+				klog.Errorf("error reading image (%s) from disk : %v", *img, err)
 			}
 			defer f.Close()
 			err = node.LoadImageArchive(f)
 			if err != nil {
-				fmt.Println(err)
+				klog.Errorf("error loading (%s) into the node : %v", *img, err)
 			}
 		}
 
