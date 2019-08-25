@@ -63,7 +63,7 @@ docker images || true
 ## Creatre a second cluster test and load an image to it.
 docker save busybox > ./out/busybox.tar
 ./out/e2e -start -profile m6 -image ./busybox.tar
-ctr -n k8s.io images ls || grep busybox
+docker exec m6control-plane ctr -n k8s.io images ls || grep busybox
 
 
 # delete our cluster in the end
