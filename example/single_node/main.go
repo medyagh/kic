@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
@@ -24,7 +26,8 @@ func main() {
 	cpus := flag.String("cpu", "2", "number of cpus to dedicate to the node")
 	memory := flag.String("memory", "2000m", "memory")
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
-	img := flag.String("image", "", "image to load")
+	userImg := flag.String("image", "", "image to load")
+	load := flag.Bool("load", false, "to load an image")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -49,6 +52,8 @@ func main() {
 		IPv6:              false,
 	}
 
+	cmder := mycmder.New(ns.Name)
+
 	if *start {
 		fmt.Printf("Starting on port %d\n ", hostPort)
 		err := oci.PullIfNotPresent(imgSha, false, time.Minute*3)
@@ -57,7 +62,7 @@ func main() {
 		}
 
 		// create node
-		node, err := ns.Create(mycmder.New(ns.Name))
+		node, err := ns.Create(cmder)
 		if err != nil {
 			klog.Errorf("Error Creating node %s %v", ns.Name, err)
 		}
@@ -94,20 +99,12 @@ func main() {
 		kube.RunTaint(node)
 		kube.InstallCNI(node, "10.244.0.0/16")
 
-		if len(*img) != 0 {
-			fmt.Printf("loading image %s\n", *img)
-			f, err := os.Open(*img)
-			if err != nil {
-				klog.Errorf("error reading image (%s) from disk : %v", *img, err)
-			}
-			defer f.Close()
-			err = node.LoadImageArchive(f)
-			if err != nil {
-				klog.Errorf("error loading (%s) into the node : %v", *img, err)
-			}
+		if len(*userImg) != 0 {
+			loadImage(*userImg, node)
 		}
 
 		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+
 		// kubeconfig for end-user
 		kube.WriteKubeConfig(c, *profile)
 	}
@@ -115,5 +112,52 @@ func main() {
 	if *delete {
 		fmt.Printf("Deleting ... %s\n", *profile)
 		ns.Delete()
+	}
+
+	if *load && len(*userImg) != 0 {
+		node, err := node.Find(*profile+"control-plane", cmder)
+		if err != nil {
+			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
+			os.Exit(1)
+		}
+		loadImage(*userImg, node)
+	}
+}
+
+func loadImage(image string, node *node.Node) {
+	_, err := oci.ImageID(image)
+	if err != nil {
+		klog.Errorf("error getting image not present locally %s: %v", image, err)
+		os.Exit(1)
+	}
+
+	dir, err := ioutil.TempDir("", "image-tar")
+	if err != nil {
+		klog.Errorf("error creating temp directory")
+		os.Exit(1)
+	}
+	defer os.RemoveAll(dir)
+
+	imageTarPath := filepath.Join(dir, "image.tar")
+
+	fmt.Printf("Saving image archive %s\n", image)
+	err = oci.Save(image, imageTarPath)
+	if err != nil {
+		klog.Errorf("error saving image archive %s: %v", image, err)
+		os.Exit(1)
+	}
+
+	f, err := os.Open(imageTarPath)
+	if err != nil {
+		klog.Errorf("error reading image (%s) from disk : %v", image, err)
+		os.Exit(1)
+	}
+	defer f.Close()
+
+	fmt.Printf("Loading image %s\n", image)
+	err = node.LoadImageArchive(f)
+	if err != nil {
+		klog.Errorf("error loading (%s) into the node : %v", image, err)
+		os.Exit(1)
 	}
 }
