@@ -61,6 +61,7 @@ docker pull busybox
 docker images || true
 
 ## Creatre a second cluster test and load an image to it.
+docker pull busybox
 docker save busybox > ./out/busybox.tar
 ./out/e2e -start -profile m6 -image ./busybox.tar
 docker exec m6control-plane ctr -n k8s.io images ls || grep busybox
