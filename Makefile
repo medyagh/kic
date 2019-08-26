@@ -7,7 +7,7 @@ GOLINT_OPTIONS = --deadline 4m \
 
 out/linters/golangci-lint:
 	mkdir -p out/linters
-	GO111MODULE=on curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b out/linters $(GOLINT_VERSION)
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b out/linters $(GOLINT_VERSION)
 
 
 lint: out/linters/golangci-lint
