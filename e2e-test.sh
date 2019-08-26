@@ -68,8 +68,10 @@ echo "Loading image from user machine to cluster" && ./out/e2e -profile cluster2
 echo "Checking if image is loaded" && docker exec cluster2control-plane ctr -n k8s.io images ls  | grep e2e-example-img
 
 ## copy file from user machine to cluster
-echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2  -cp=true Dockerfile /etc/Dockerfile 
-echo "Checking if file was copied" && docker exec cluster2control-plane ls /etc/Dockerfile
+touch ./out/kic-copy.txt
+echo "copy test" > ./out/kic-copy.txt
+echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2  -cp=true ./out/kic-copy.txt /etc/kic-copy.txt
+echo "Checking if file was copied" && docker exec cluster2control-plane cat /etc/kic-copy.txt | grep "copy test"
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
