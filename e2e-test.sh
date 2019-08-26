@@ -8,6 +8,8 @@ set -eux -o pipefail
     sudo mv ./kubectl /usr/local/bin/kubectl
 fi
 
+# do a lint check
+make lint
 
  # Build Example
 make out/e2e

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
+	"github.com/medyagh/kic/pkg/action"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/image"
-	"github.com/medyagh/kic/pkg/action"
 	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/oci"
 	"github.com/phayes/freeport"
@@ -95,23 +95,45 @@ func main() {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		action.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
-		action.RunTaint(node)
-		action.InstallCNI(node, "10.244.0.0/16")
+		_, err = action.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
+		if err != nil {
+			klog.Errorf("failed to RunKubeadmInit : %v", err)
+		}
+
+		err = action.RunTaint(node)
+		if err != nil {
+			klog.Errorf("failed to RunTaint : %v", err)
+		}
+
+		err = action.InstallCNI(node, "10.244.0.0/16")
+		if err != nil {
+			klog.Errorf("failed to InstallCNI : %v", err)
+		}
 
 		if len(*userImg) != 0 {
 			loadImage(*userImg, node)
 		}
 
-		c, _ := action.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+		c, err := action.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+		if err != nil {
+			klog.Errorf("failed to GenerateKubeConfig : %v", err)
+		}
 
 		// kubeconfig for end-user
-		action.WriteKubeConfig(c, *profile)
+		err = action.WriteKubeConfig(c, *profile)
+		if err != nil {
+			klog.Errorf("failed to WriteKubeConfig : %v", err)
+		}
+
 	}
 
 	if *delete {
 		fmt.Printf("Deleting ... %s\n", *profile)
-		ns.Delete()
+		err = ns.Delete()
+		if err != nil {
+			klog.Errorf("failed to delete cluster %s : %v", *profile, err)
+		}
+
 	}
 
 	if *load && len(*userImg) != 0 {

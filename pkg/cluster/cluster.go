@@ -37,7 +37,7 @@ type Config struct {
 // Networking contains cluster wide network settings
 type Networking struct {
 	// IPFamily is the network cluster model, currently it can be ipv4 or ipv6
-	IPFamily ClusterIPFamily `json:"ipFamily,omitempty"`
+	IPFamily IPFamily `json:"ipFamily,omitempty"`
 	// APIServerPort is the listen port on the host for the Kubernetes API Server
 	// Defaults to a random port on the host
 	APIServerPort int32 `json:"apiServerPort,omitempty"`
@@ -57,12 +57,12 @@ type Networking struct {
 	DisableDefaultCNI bool `json:"disableDefaultCNI,omitempty"`
 }
 
-// ClusterIPFamily defines cluster network IP family
-type ClusterIPFamily string
+// IPFamily defines cluster network IP family
+type IPFamily string
 
 const (
-	// IPv4Family sets ClusterIPFamily to ipv4
-	IPv4Family ClusterIPFamily = "ipv4"
-	// IPv6Family sets ClusterIPFamily to ipv6
-	IPv6Family ClusterIPFamily = "ipv6"
+	// IPv4Family sets IPFamily to ipv4
+	IPv4Family IPFamily = "ipv4"
+	// IPv6Family sets IPFamily to ipv6
+	IPv6Family IPFamily = "ipv6"
 )
