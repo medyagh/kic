@@ -85,6 +85,15 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 	return nil
 }
 
+// Copy copies a file/folder into node
+func (n *Node) Copy(source, destination string) error {
+	dest := fmt.Sprintf("%s:%s", n.name, destination)
+	if err := oci.Copy(source, dest); err != nil {
+		return errors.Wrap(err, "failed to copy file/folder")
+	}
+	return nil
+}
+
 // Command returns a new runner.Cmd that will run on the node
 func (n *Node) Command(command string, args ...string) runner.Cmd {
 	return n.cmder.Command(command, args...)

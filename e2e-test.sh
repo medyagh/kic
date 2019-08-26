@@ -60,12 +60,16 @@ docker pull busybox
 docker tag busybox e2e-example-img
 docker images || true  # list images after
 
-## Creatre a second cluster test and load an image to it.
+## Create a second cluster test and load an image to it.
 echo "Starting a second cluster" && ./out/e2e -start -profile cluster2 
 
 ## load an image from user machine to cluster
 echo "Loading image from user machine to cluster" && ./out/e2e -profile cluster2  -image e2e-example-img -load=true
 echo "Checking if image is loaded" && docker exec cluster2control-plane ctr -n k8s.io images ls  | grep e2e-example-img
+
+## copy file from user machine to cluster
+echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2  -cp=true Dockerfile /etc/Dockerfile 
+echo "Checking if file was copied" && docker exec cluster2control-plane ls /etc/Dockerfile
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2

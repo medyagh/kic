@@ -29,6 +29,7 @@ func main() {
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
 	userImg := flag.String("image", "", "image to load")
 	load := flag.Bool("load", false, "to load an image")
+	copy := flag.Bool("cp", false, "to copy a file/folder into the node")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -42,9 +43,10 @@ func main() {
 	if err != nil {
 		klog.Errorf("Error getting proxy details %s", imgSha)
 	}
+	nodeName := *profile + "control-plane"
 	ns := &node.Spec{
 		Profile:           *profile,
-		Name:              *profile + "control-plane",
+		Name:              nodeName,
 		Image:             imgSha,
 		CPUs:              *cpus,
 		Memory:            *memory,
@@ -142,12 +144,25 @@ func main() {
 	}
 
 	if *load && len(*userImg) != 0 {
-		node, err := node.Find(*profile+"control-plane", cmder)
+		node, err := node.Find(nodeName, cmder)
 		if err != nil {
 			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
 			os.Exit(1)
 		}
 		loadImage(*userImg, node)
+	}
+
+	if *copy && len(os.Args) > 3 {
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
+			os.Exit(1)
+		}
+		err = node.Copy(os.Args[2], os.Args[3])
+		if err != nil {
+			klog.Errorf("error copying file/folder %s, %s: %v", os.Args[1], os.Args[2], err)
+			os.Exit(1)
+		}
 	}
 }
 
