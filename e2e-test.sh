@@ -66,7 +66,7 @@ echo "Starting a second cluster" && ./out/e2e -start -profile cluster2
 
 ## load an image from user machine to cluster
 echo "Loading image from user machine to cluster" && ./out/e2e -profile cluster2  -image e2e-example-img -load=true
-echo "Checking if image is loaded" && docker exec  m5control-plane ctr -n k8s.io images ls  | grep e2e-example-img
+echo "Checking if image is loaded" && docker exec cluster2  ctr -n k8s.io images ls  | grep e2e-example-img
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
