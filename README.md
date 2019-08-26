@@ -6,11 +6,12 @@ To be used a a library
 
 ## Features
 - multiple kubernetes version suported.
-- multiple profiles.
-- set number of cpus/ram for the cluster.
+- multiple clusters (profiles).
+- set cpus/ram .
 - start / stop / pause.
 - docker / podman.
-- Bring your own Command Runner.
+- bring your own command Runner.
+- load images from user host to the cluster.
 
- ### Total lines of code: 1814 
+ ### Total lines of code: 1778 
  (counted by  find . -name '*.go' | xargs wc -l)

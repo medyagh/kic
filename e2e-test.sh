@@ -8,7 +8,6 @@ set -eux -o pipefail
     sudo mv ./kubectl /usr/local/bin/kubectl
 fi
 
-
  # Build Example
 make out/e2e
 
