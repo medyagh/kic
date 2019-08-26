@@ -1,4 +1,4 @@
-package kube
+package action
 
 import (
 	"bytes"
@@ -9,15 +9,14 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
 )
 
 // rename generate based on /etc/...
-func GenerateKubeConfig(n *node.Node, hostIP string, hostPort int32, profile string) ([]byte, error) {
-	cmd := n.Command("cat", "/etc/kubernetes/admin.conf")
+func GenerateKubeConfig(r runner.Cmder, hostIP string, hostPort int32, profile string) ([]byte, error) {
+	cmd := r.Command("cat", "/etc/kubernetes/admin.conf")
 	lines, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get kubeconfig from node")

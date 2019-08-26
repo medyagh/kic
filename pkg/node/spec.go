@@ -33,7 +33,6 @@ func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)
 	}
-	return node, err
 }
 
 func (d *Spec) Stop() error {

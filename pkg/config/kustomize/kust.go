@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/pkg/errors"
+
 	"sigs.k8s.io/kustomize/k8sdeps"
 	"sigs.k8s.io/kustomize/pkg/commands/build"
 	"sigs.k8s.io/kustomize/pkg/fs"
@@ -85,7 +87,10 @@ func Build(resources, patches []string, patchesJSON6902 []PatchJSON6902) (string
 		}
 	}
 
-	memFS.WriteFile(filepath.Join(fakeDir, "kustomization.yaml"), kustomization.Bytes())
+	err := memFS.WriteFile(filepath.Join(fakeDir, "kustomization.yaml"), kustomization.Bytes())
+	if err != nil {
+		return "", errors.Wrap(err, "kustomize build memFs.WriteFile")
+	}
 
 	// now we can build the kustomization
 	var out bytes.Buffer
@@ -95,7 +100,7 @@ func Build(resources, patches []string, patchesJSON6902 []PatchJSON6902) (string
 	// we want to silence usage, error output, and any future output from cobra
 	// we will get error output as a golang error from execute
 	cmd.SetOutput(ioutil.Discard)
-	_, err := cmd.ExecuteC()
+	_, err = cmd.ExecuteC()
 	if err != nil {
 		return "", err
 	}

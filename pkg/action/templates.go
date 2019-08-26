@@ -1,4 +1,4 @@
-package kube
+package action
 
 // See docs for these APIs at:
 // https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm#pkg-subdirectories

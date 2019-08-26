@@ -17,6 +17,6 @@ func NameForVersion(ver string) (string, error) {
 	case "v1.11.10":
 		return "medyagh/kic:v1.13.0@sha256:e4d808a30be9d87cd2266819bed6377a83c0835830b02043291dc359c002b1e4", nil
 	default:
-		return "v1.15.0", fmt.Errorf("Not supported version, using default version")
+		return "v1.15.0", fmt.Errorf("not supported version, using default version")
 	}
 }

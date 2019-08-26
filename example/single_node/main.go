@@ -11,7 +11,7 @@ import (
 	"github.com/medyagh/kic/example/single_node/mycmder"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/image"
-	"github.com/medyagh/kic/pkg/kube"
+	"github.com/medyagh/kic/pkg/action"
 	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/oci"
 	"github.com/phayes/freeport"
@@ -72,7 +72,7 @@ func main() {
 			klog.Errorf("Error getting node ip: %s error: %v", ip, err)
 		}
 
-		cfg := kube.ConfigData{
+		cfg := action.ConfigData{
 			ClusterName:          *profile,
 			KubernetesVersion:    *kubeVersion,
 			ControlPlaneEndpoint: ip + ":6443",
@@ -85,7 +85,7 @@ func main() {
 			IPv6:                 false,
 		}
 
-		kCfg, err := kube.KubeAdmCfg(cfg)
+		kCfg, err := action.KubeAdmCfg(cfg)
 		if err != nil {
 			klog.Errorf("failed to generate kubeaddm  error: %v , kCfg :\n %+v", err, kCfg)
 		}
@@ -95,18 +95,18 @@ func main() {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		kube.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
-		kube.RunTaint(node)
-		kube.InstallCNI(node, "10.244.0.0/16")
+		action.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
+		action.RunTaint(node)
+		action.InstallCNI(node, "10.244.0.0/16")
 
 		if len(*userImg) != 0 {
 			loadImage(*userImg, node)
 		}
 
-		c, _ := kube.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+		c, _ := action.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 
 		// kubeconfig for end-user
-		kube.WriteKubeConfig(c, *profile)
+		action.WriteKubeConfig(c, *profile)
 	}
 
 	if *delete {
@@ -139,7 +139,7 @@ func loadImage(image string, node *node.Node) {
 	defer os.RemoveAll(dir)
 
 	imageTarPath := filepath.Join(dir, "image.tar")
-
+	fmt.Println(imageTarPath)
 	fmt.Printf("Saving image archive %s\n", image)
 	err = oci.Save(image, imageTarPath)
 	if err != nil {
