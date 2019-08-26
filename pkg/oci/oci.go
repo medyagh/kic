@@ -8,7 +8,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/medyagh/kic/pkg/config/cri"
-	"sigs.k8s.io/kind/pkg/exec"
+	"github.com/medyagh/kic/pkg/runner"
 )
 
 // can be podman
@@ -16,31 +16,31 @@ const DefaultOCI = "docker"
 
 // Inspect return low-level information on containers
 func Inspect(containerNameOrID, format string) ([]string, error) {
-	cmd := exec.Command(DefaultOCI, "inspect",
+	cmd := runner.Command(DefaultOCI, "inspect",
 		"-f", format,
 		containerNameOrID, // ... against the "node" container
 	)
 
-	return exec.CombinedOutputLines(cmd)
+	return runner.CombinedOutputLines(cmd)
 }
 
 // NetworkInspect displays detailed information on one or more networks
 func NetworkInspect(networkNames []string, format string) ([]string, error) {
-	cmd := exec.Command("docker", "network", "inspect",
+	cmd := runner.Command("docker", "network", "inspect",
 		"-f", format,
 		strings.Join(networkNames, " "),
 	)
-	return exec.CombinedOutputLines(cmd)
+	return runner.CombinedOutputLines(cmd)
 }
 
 // ImageInspect return low-level information on containers images
 func ImageInspect(containerNameOrID, format string) ([]string, error) {
-	cmd := exec.Command("docker", "image", "inspect",
+	cmd := runner.Command("docker", "image", "inspect",
 		"-f", format,
 		containerNameOrID,
 	)
 
-	return exec.CombinedOutputLines(cmd)
+	return runner.CombinedOutputLines(cmd)
 }
 
 // ImageID return the Id of the container image
@@ -103,7 +103,7 @@ func generateMountBindings(mounts ...cri.Mount) []string {
 
 // PullIfNotPresent pulls docker image if not present back off exponentially
 func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) error {
-	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
+	cmd := runner.Command(DefaultOCI, "inspect", "--type=image", image)
 	err := cmd.Run()
 	if err == nil && forceUpdate == false {
 		return nil // if presents locally and not force
@@ -118,7 +118,7 @@ func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) err
 
 // Pull pulls an image, retrying up to retries times
 func pull(image string) error {
-	err := exec.Command(DefaultOCI, "pull", image).Run()
+	err := runner.Command(DefaultOCI, "pull", image).Run()
 	if err != nil {
 		return fmt.Errorf("error pull image %s : %v", image, err)
 	}
@@ -127,8 +127,8 @@ func pull(image string) error {
 
 // UsernsRemap checks if userns-remap is enabled in dockerd
 func UsernsRemap() bool {
-	cmd := exec.Command(DefaultOCI, "info", "--format", "'{{json .SecurityOptions}}'")
-	lines, err := exec.CombinedOutputLines(cmd)
+	cmd := runner.Command(DefaultOCI, "info", "--format", "'{{json .SecurityOptions}}'")
+	lines, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return false
 	}

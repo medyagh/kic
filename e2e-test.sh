@@ -56,18 +56,19 @@ docker ps || grep "m5control-plane"
 
 
 # pulling an image to load to a new kic cluster
-docker images || true
+docker images || true  # list images before
 docker pull busybox
-docker images || true
+docker tag busybox e2e-example-img
+docker images || true  # list images after
 
 ## Creatre a second cluster test and load an image to it.
-docker save busybox > busybox.tar
-./out/e2e -start -profile m6 -image ./busybox.tar
+./out/e2e -start -profile cluster2 
+
+./single_node -profile cluster2  -image e2e-example-img -load=true
 
 
 # delete our cluster in the end
-./out/e2e -delete -profile m5
-./out/e2e -delete -profile m6
+./out/e2e -delete -profile cluster2
 
 lsof -ti tcp:8080 | xargs kill || true
 

@@ -139,7 +139,7 @@ func loadImage(image string, node *node.Node) {
 	defer os.RemoveAll(dir)
 
 	imageTarPath := filepath.Join(dir, "image.tar")
-
+	fmt.Println(imageTarPath)
 	fmt.Printf("Saving image archive %s\n", image)
 	err = oci.Save(image, imageTarPath)
 	if err != nil {
