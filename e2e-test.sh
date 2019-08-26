@@ -74,7 +74,7 @@ echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2 
 echo "Checking if file was copied" && docker exec cluster2control-plane cat /etc/copy-test.txt | grep "copy test"
 
 ## remove file from cluster
-echo "Removing file from cluster" && ./out/e2e -profile cluster2 -cp=rm -src=/etc/copy-test.txt
+echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm=true -src=/etc/copy-test.txt
 echo "Checking if file was copied" && docker exec cluster2control-plane cat /etc/copy-test.txt 2>&1 | grep "No such file or directory"
 
 # delete our cluster in the end
