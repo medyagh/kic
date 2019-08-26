@@ -94,6 +94,15 @@ func (n *Node) Copy(source, destination string) error {
 	return nil
 }
 
+// Remove removes a file from node
+func (n *Node) Remove(source string) error {
+	cmd := n.Command("rm", source)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to remove file")
+	}
+	return nil
+}
+
 // Command returns a new runner.Cmd that will run on the node
 func (n *Node) Command(command string, args ...string) runner.Cmd {
 	return n.cmder.Command(command, args...)

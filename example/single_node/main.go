@@ -30,6 +30,7 @@ func main() {
 	userImg := flag.String("image", "", "image to load")
 	load := flag.Bool("load", false, "to load an image")
 	copy := flag.Bool("cp", false, "to copy a file/folder into the node")
+	remove := flag.Bool("rm", false, "to rm a file from the node")
 	src := flag.String("src", "", "source file/folder to copy")
 	dest := flag.String("dest", "", "destination to copy file/folder ")
 
@@ -154,15 +155,28 @@ func main() {
 		loadImage(*userImg, node)
 	}
 
-	if *copy && len(os.Args) > 3 {
+	if *copy {
 		node, err := node.Find(nodeName, cmder)
 		if err != nil {
-			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
+			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
 		}
 		err = node.Copy(*src, *dest)
 		if err != nil {
 			klog.Errorf("error copying file/folder %s, %s: %v", *src, *dest, err)
+			os.Exit(1)
+		}
+	}
+
+	if *remove {
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error finding node %s: %v", *userImg, err)
+			os.Exit(1)
+		}
+		err = node.Remove(*src)
+		if err != nil {
+			klog.Errorf("error removing file %s: %v", *src, *dest, err)
 			os.Exit(1)
 		}
 	}

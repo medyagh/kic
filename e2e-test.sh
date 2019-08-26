@@ -70,11 +70,14 @@ echo "Checking if image is loaded" && docker exec cluster2control-plane ctr -n k
 ## copy file from user machine to cluster
 touch copy-test.txt
 echo "copy test" > copy-test.txt
-echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2  -cp=true -src=copy-test.txt -dest=/etc/copy-test.txt
+echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2 -cp=true -src=copy-test.txt -dest=/etc/copy-test.txt
 echo "Checking if file was copied" && docker exec cluster2control-plane cat /etc/copy-test.txt | grep "copy test"
+
+## remove file from cluster
+echo "Removing file from cluster" && ./out/e2e -profile cluster2 -cp=rm -src=/etc/copy-test.txt
+echo "Checking if file was copied" && docker exec cluster2control-plane cat /etc/copy-test.txt 2>&1 | grep "No such file or directory"
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
 
 lsof -ti tcp:8080 | xargs kill || true
-
