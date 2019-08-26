@@ -50,7 +50,7 @@ func ImageID(containerNameOrID string) (string, error) {
 		return "", err
 	}
 	if len(lines) != 1 {
-		return "", fmt.Errorf("Docker image ID should only be one line, got %d lines", len(lines))
+		return "", fmt.Errorf("docker image ID should only be one line, got %d lines", len(lines))
 	}
 	return lines[0], nil
 }
@@ -105,7 +105,7 @@ func generateMountBindings(mounts ...cri.Mount) []string {
 func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) error {
 	cmd := runner.Command(DefaultOCI, "inspect", "--type=image", image)
 	err := cmd.Run()
-	if err == nil && forceUpdate == false {
+	if err == nil && !forceUpdate {
 		return nil // if presents locally and not force
 	}
 	b := backoff.NewExponentialBackOff()

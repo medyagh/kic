@@ -1,15 +1,14 @@
-package kube
+package action
 
 import (
 	"github.com/pkg/errors"
 
-	"github.com/medyagh/kic/pkg/node"
 	"github.com/medyagh/kic/pkg/runner"
 )
 
 /// RunKubeadmInit runs kubeadm init on a node
-func RunKubeadmInit(node *node.Node, kubeadmCfgPath string, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
-	cmd := node.Command(
+func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath string, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
+	cmd := r.Command(
 		// init because this is the control plane node
 		"kubeadm", "init",
 		"--ignore-preflight-errors=all",
@@ -27,10 +26,10 @@ func RunKubeadmInit(node *node.Node, kubeadmCfgPath string, hostIP string, hostP
 	return lines, nil
 }
 
-func RunTaint(n *node.Node) error {
+func RunTaint(r runner.Cmder) error {
 	// if we are only provisioning one node, remove the master taint
 	// https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#master-isolation
-	if err := n.Command(
+	if err := r.Command(
 		"kubectl", "--kubeconfig=/etc/kubernetes/admin.conf",
 		"taint", "nodes", "--all", "node-role.kubernetes.io/master-",
 	).Run(); err != nil {
