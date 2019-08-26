@@ -30,6 +30,8 @@ func main() {
 	userImg := flag.String("image", "", "image to load")
 	load := flag.Bool("load", false, "to load an image")
 	copy := flag.Bool("cp", false, "to copy a file/folder into the node")
+	src := flag.String("src", "", "source file/folder to copy")
+	dest := flag.String("dest", "", "destination to copy file/folder ")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -158,9 +160,9 @@ func main() {
 			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
 			os.Exit(1)
 		}
-		err = node.Copy(os.Args[2], os.Args[3])
+		err = node.Copy(*src, *dest)
 		if err != nil {
-			klog.Errorf("error copying file/folder %s, %s: %v", os.Args[1], os.Args[2], err)
+			klog.Errorf("error copying file/folder %s, %s: %v", *src, *dest, err)
 			os.Exit(1)
 		}
 	}
