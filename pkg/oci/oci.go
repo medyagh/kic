@@ -9,6 +9,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/runner"
+	"github.com/pkg/errors"
 )
 
 // can be podman
@@ -31,6 +32,18 @@ func NetworkInspect(networkNames []string, format string) ([]string, error) {
 		strings.Join(networkNames, " "),
 	)
 	return runner.CombinedOutputLines(cmd)
+}
+
+// GetSubnets returns a slice of subnets for a specified network name
+// For example the command : docker network inspect -f '{{range (index (index . "IPAM") "Config")}}{{index . "Subnet"}} {{end}}' bridge
+// returns 172.17.0.0/16
+func GetSubnets(networkName string) ([]string, error) {
+	format := `{{range (index (index . "IPAM") "Config")}}{{index . "Subnet"}} {{end}}`
+	lines, err := NetworkInspect([]string{networkName}, format)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(lines[0], " "), nil
 }
 
 // ImageInspect return low-level information on containers images
@@ -153,4 +166,14 @@ func generatePortMappings(portMappings ...cri.PortMapping) []string {
 		result = append(result, publish)
 	}
 	return result
+}
+
+// Save saves an image archive "docker/podman save"
+func Save(image, dest string) error {
+	cmd := runner.Command(DefaultOCI, "save", "-o", dest, image)
+	lines, err := runner.CombinedOutputLines(cmd)
+	if err != nil {
+		return errors.Wrapf(err, "saving image to tar failed, output %s", lines[0])
+	}
+	return nil
 }
