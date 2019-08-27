@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
@@ -37,7 +38,10 @@ func main() {
 	}
 
 	imgSha, _ := image.NameForVersion(*kubeVersion)
-
+	envs, err := getProxyEnvs()
+	if err != nil {
+		klog.Errorf("Error getting proxy details %s", imgSha)
+	}
 	ns := &node.Spec{
 		Profile:           *profile,
 		Name:              *profile + "control-plane",
@@ -50,6 +54,7 @@ func main() {
 		APIServerAddress:  *hostIP,
 		APIServerPort:     hostPort,
 		IPv6:              false,
+		Envs:              envs,
 	}
 
 	cmder := mycmder.New(ns.Name)
@@ -182,4 +187,46 @@ func loadImage(image string, node *node.Node) {
 		klog.Errorf("error loading (%s) into the node : %v", image, err)
 		os.Exit(1)
 	}
+}
+
+// getProxyEnvs returns a struct with the host environment proxy settings
+// that should be passed to the nodes
+func getProxyEnvs() (map[string]string, error) {
+	const httpProxy = "HTTP_PROXY"
+	const httpsProxy = "HTTPS_PROXY"
+	const noProxy = "NO_PROXY"
+	var proxyEnvs = []string{httpProxy, httpsProxy, noProxy}
+	var val string
+	envs := make(map[string]string)
+
+	proxySupport := false
+
+	for _, name := range proxyEnvs {
+		val = os.Getenv(name)
+		if val != "" {
+			proxySupport = true
+			envs[name] = val
+			envs[strings.ToLower(name)] = val
+		} else {
+			val = os.Getenv(strings.ToLower(name))
+			if val != "" {
+				proxySupport = true
+				envs[name] = val
+				envs[strings.ToLower(name)] = val
+			}
+		}
+	}
+
+	// Specifically add the docker network subnets to NO_PROXY if we are using proxies
+	if proxySupport {
+		subnets, err := oci.GetSubnets(node.DefaultNetwork)
+		if err != nil {
+			return nil, err
+		}
+		noProxyList := strings.Join(append(subnets, envs[noProxy]), ",")
+		envs[noProxy] = noProxyList
+		envs[strings.ToLower(noProxy)] = noProxyList
+	}
+
+	return envs, nil
 }

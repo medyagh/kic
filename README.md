@@ -13,5 +13,5 @@ To be used a a library
 - bring your own command Runner.
 - load images from user host to the cluster.
 
- ### Total lines of code: 1778 
+ ### Total lines of code: 1720 
  (counted by  find . -name '*.go' | xargs wc -l)

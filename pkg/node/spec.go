@@ -27,10 +27,39 @@ type Spec struct {
 }
 
 func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
+	params := CreateParams{
+		Name:         d.Name,
+		Image:        d.Image,
+		ClusterLabel: ClusterLabelKey + d.Profile,
+		Mounts:       d.ExtraMounts,
+		PortMappings: d.ExtraPortMappings,
+		Cpus:         d.CPUs,
+		Memory:       d.Memory,
+		Envs:         d.Envs,
+		ExtraArgs:    []string{"--expose", fmt.Sprintf("%d", d.APIServerPort)},
+	}
+
 	switch d.Role {
 	case "control-plane":
-		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, d.CPUs, d.Memory, d.Envs, cmder)
-		return node, err
+		params.PortMappings = append(params.PortMappings, cri.PortMapping{
+			ListenAddress: d.APIServerAddress,
+			HostPort:      d.APIServerPort,
+			ContainerPort: 6443,
+		})
+		node, err = CreateNode(
+			params,
+			cmder,
+		)
+		if err != nil {
+			return node, err
+		}
+
+		// stores the port mapping into the node internal state
+		node.cache.set(func(cache *nodeCache) {
+			cache.ports = map[int32]int32{6443: d.APIServerPort}
+		})
+		return node, nil
+
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)
 	}

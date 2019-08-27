@@ -90,11 +90,24 @@ func (n *Node) Command(command string, args ...string) runner.Cmd {
 	return n.cmder.Command(command, args...)
 }
 
+type CreateParams struct {
+	Name         string // used for container name and hostname
+	Image        string // container image to use to create the node.
+	ClusterLabel string
+	Role         string // currently only role supported is control-plane
+	Mounts       []cri.Mount
+	PortMappings []cri.PortMapping
+	Cpus         string
+	Memory       string
+	Envs         map[string]string
+	ExtraArgs    []string
+}
+
 // todo use a struct for this
-func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, envs map[string]string, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
+func CreateNode(p CreateParams, cmder runner.Cmder) (*Node, error) {
 	runArgs := []string{
-		fmt.Sprintf("--cpus=%s", cpus),
-		fmt.Sprintf("--memory=%s", memory),
+		fmt.Sprintf("--cpus=%s", p.Cpus),
+		fmt.Sprintf("--memory=%s", p.Memory),
 		"-d", // run the container detached
 		"-t", // allocate a tty for entrypoint logs
 		// running containers in a container requires privileged
@@ -108,20 +121,20 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 		"--tmpfs", "/run", // systemd wants a writable /run
 		// some k8s things want /lib/modules
 		"-v", "/lib/modules:/lib/modules:ro",
-		"--hostname", name, // make hostname match container name
-		"--name", name, // ... and set the container name
+		"--hostname", p.Name, // make hostname match container name
+		"--name", p.Name, // ... and set the container name
 		// label the node with the cluster ID
-		"--label", clusterLabel,
+		"--label", p.ClusterLabel,
 		// label the node with the role ID
-		"--label", fmt.Sprintf("%s=%s", NodeRoleKey, role),
+		"--label", fmt.Sprintf("%s=%s", NodeRoleKey, p.Role),
 	}
 
-	for key, val := range envs {
+	for key, val := range p.Envs {
 		runArgs = append(runArgs, "-e", fmt.Sprintf("%s=%s", key, val))
 	}
 
 	// adds node specific args
-	runArgs = append(runArgs, extraArgs...)
+	runArgs = append(runArgs, p.ExtraArgs...)
 
 	if oci.UsernsRemap() {
 		// We need this argument in order to make this command work
@@ -130,44 +143,19 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 	}
 
 	_, err := oci.CreateContainer(
-		image,
+		p.Image,
 		oci.WithRunArgs(runArgs...),
-		oci.WithMounts(mounts),
-		oci.WithPortMappings(portMappings),
+		oci.WithMounts(p.Mounts),
+		oci.WithPortMappings(p.PortMappings),
 	)
 
 	// we should return a handle so the caller can clean it up
-	node := FromName(name)
+	node := FromName(p.Name)
 	node.cmder = cmder
 	if err != nil {
 		return node, fmt.Errorf("docker run error %v", err)
 	}
 
-	return node, nil
-}
-
-// CreateControlPlaneNode creates a contol-plane node
-// and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, envs map[string]string, cmder runner.Cmder) (node *Node, err error) {
-	// add api server port mapping
-	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
-		ListenAddress: listenAddress,
-		HostPort:      port,
-		ContainerPort: 6443,
-	})
-	node, err = CreateNode(
-		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cpus, memory, envs, cmder,
-		// publish selected port for the API server
-		"--expose", fmt.Sprintf("%d", port),
-	)
-	if err != nil {
-		return node, err
-	}
-
-	// stores the port mapping into the node internal state
-	node.cache.set(func(cache *nodeCache) {
-		cache.ports = map[int32]int32{6443: port}
-	})
 	return node, nil
 }
 
