@@ -23,12 +23,13 @@ type Spec struct {
 	APIServerPort     int32
 	APIServerAddress  string
 	IPv6              bool
+	Envs              map[string]string // environment variables to be passsed to passed to create nodes
 }
 
 func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	switch d.Role {
 	case "control-plane":
-		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, d.CPUs, d.Memory, cmder)
+		node, err := CreateControlPlaneNode(d.Name, d.Image, ClusterLabelKey+d.Profile, d.APIServerAddress, d.APIServerPort, d.ExtraMounts, d.ExtraPortMappings, d.CPUs, d.Memory, d.Envs, cmder)
 		return node, err
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)

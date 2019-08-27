@@ -10,15 +10,13 @@ import (
 
 const (
 	// Docker default bridge network is named "bridge" (https://docs.docker.com/network/bridge/#use-the-default-bridge-network)
-	defaultNetwork  = "bridge"
-	httpProxy       = "HTTP_PROXY"
-	httpsProxy      = "HTTPS_PROXY"
-	noProxy         = "NO_PROXY"
+	DefaultNetwork  = "bridge"
 	ClusterLabelKey = "io.k8s.sigs.kic.cluster" // ClusterLabelKey is applied to each node docker container for identification
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 )
 
-func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
+// todo use a struct for this
+func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, envs map[string]string, cmder runner.Cmder, extraArgs ...string) (*Node, error) {
 	runArgs := []string{
 		fmt.Sprintf("--cpus=%s", cpus),
 		fmt.Sprintf("--memory=%s", memory),
@@ -43,12 +41,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 		"--label", fmt.Sprintf("%s=%s", NodeRoleKey, role),
 	}
 
-	// pass proxy environment variables to be used by node's docker deamon
-	proxyDetails, err := getProxyDetails()
-	if err != nil || proxyDetails == nil {
-		return nil, fmt.Errorf("proxy setup error : %v", err)
-	}
-	for key, val := range proxyDetails.Envs {
+	for key, val := range envs {
 		runArgs = append(runArgs, "-e", fmt.Sprintf("%s=%s", key, val))
 	}
 
@@ -61,7 +54,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 		runArgs = append(runArgs, "--userns=host")
 	}
 
-	_, err = oci.CreateContainer(
+	_, err := oci.CreateContainer(
 		image,
 		oci.WithRunArgs(runArgs...),
 		oci.WithMounts(mounts),
@@ -80,7 +73,7 @@ func CreateNode(name, image, clusterLabel, role string, mounts []cri.Mount, port
 
 // CreateControlPlaneNode creates a contol-plane node
 // and gets ready for exposing the the API server
-func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, cmder runner.Cmder) (node *Node, err error) {
+func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, port int32, mounts []cri.Mount, portMappings []cri.PortMapping, cpus string, memory string, envs map[string]string, cmder runner.Cmder) (node *Node, err error) {
 	// add api server port mapping
 	portMappingsWithAPIServer := append(portMappings, cri.PortMapping{
 		ListenAddress: listenAddress,
@@ -88,7 +81,7 @@ func CreateControlPlaneNode(name, image, clusterLabel, listenAddress string, por
 		ContainerPort: 6443,
 	})
 	node, err = CreateNode(
-		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cpus, memory, cmder,
+		name, image, clusterLabel, "control-plane", mounts, portMappingsWithAPIServer, cpus, memory, envs, cmder,
 		// publish selected port for the API server
 		"--expose", fmt.Sprintf("%d", port),
 	)

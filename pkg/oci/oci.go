@@ -33,6 +33,18 @@ func NetworkInspect(networkNames []string, format string) ([]string, error) {
 	return runner.CombinedOutputLines(cmd)
 }
 
+// GetSubnets returns a slice of subnets for a specified network name
+// For example the command : docker network inspect -f '{{range (index (index . "IPAM") "Config")}}{{index . "Subnet"}} {{end}}' bridge
+// returns 172.17.0.0/16
+func GetSubnets(networkName string) ([]string, error) {
+	format := `{{range (index (index . "IPAM") "Config")}}{{index . "Subnet"}} {{end}}`
+	lines, err := NetworkInspect([]string{networkName}, format)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(lines[0], " "), nil
+}
+
 // ImageInspect return low-level information on containers images
 func ImageInspect(containerNameOrID, format string) ([]string, error) {
 	cmd := runner.Command("docker", "image", "inspect",
