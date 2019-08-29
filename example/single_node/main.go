@@ -37,10 +37,13 @@ func main() {
 		klog.Fatal(err)
 	}
 
-	imgSha, _ := image.NameForVersion(*kubeVersion)
+	imgSha, err := image.NameForVersion(*kubeVersion)
+	if err != nil {
+		klog.Errorf("Error getting image %s", imgSha)
+	}
 	envs, err := getProxyEnvs()
 	if err != nil {
-		klog.Errorf("Error getting proxy details %s", imgSha)
+		klog.Errorf("Error getting proxy details %v", envs)
 	}
 	ns := &node.Spec{
 		Profile:           *profile,
