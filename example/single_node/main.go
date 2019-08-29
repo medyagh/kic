@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		klog.Errorf("Error getting proxy details %s", imgSha)
 	}
-	nodeName := *profile + "control-plane"
+	nodeName := *profile + "-control-plane"
 	ns := &node.Spec{
 		Profile:           *profile,
 		Name:              nodeName,
