@@ -85,7 +85,9 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 	return nil
 }
 
-// Copy copies a file/folder into node
+// Copy copies a local file/folder into node.
+// example:
+// node.Copy("/etc/resolve.conf", "/inside_container/test.conf")
 func (n *Node) Copy(source, destination string) error {
 	dest := fmt.Sprintf("%s:%s", n.name, destination)
 	if err := oci.Copy(source, dest); err != nil {
