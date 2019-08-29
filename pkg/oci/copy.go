@@ -8,6 +8,9 @@ import (
 )
 
 // Copy copies a file/folder into container
+// usage:
+// CONTAINER:SRC_PATH DEST_PATH
+// SRC_PATH- CONTAINER:DEST_PATH
 func Copy(source, dest string) error {
 	if _, err := os.Stat(source); os.IsNotExist(err) {
 		return errors.Wrapf(err, "error source %s does not exist", source)
