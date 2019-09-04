@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
 	"github.com/medyagh/kic/pkg/action"
+	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/image"
 	"github.com/medyagh/kic/pkg/node"
@@ -161,9 +163,9 @@ func main() {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
 		}
-		err = node.Copy(*src, *dest)
+		err = copyAsset(node, *src, *dest)
 		if err != nil {
-			klog.Errorf("error copying file/folder %s, %s: %v", *src, *dest, err)
+			klog.Errorf("error copying asset src: %s dest: %s, err: %v", *src, *dest, err)
 			os.Exit(1)
 		}
 	}
@@ -260,4 +262,24 @@ func getProxyEnvs() (map[string]string, error) {
 	}
 
 	return envs, nil
+}
+
+func copyAsset(n *node.Node, src, dest string) error {
+	fileInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	targetDir := path.Dir(dest)
+	targetName := path.Base(dest)
+
+	asset := assets.CopyAsset{
+		AssetName:   fileInfo.Name(),
+		TargetName:  targetName,
+		TargetDir:   targetDir,
+		Length:      fileInfo.Size(),
+		Permissions: "0777",
+	}
+
+	return n.Copy(asset)
 }

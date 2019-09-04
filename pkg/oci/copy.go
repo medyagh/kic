@@ -1,25 +1,28 @@
 package oci
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/runner"
+
 	"github.com/pkg/errors"
 )
 
-// Copy copies a file/folder into container
-// usage:
-// CONTAINER:SRC_PATH DEST_PATH
-// SRC_PATH- CONTAINER:DEST_PATH
-func Copy(source, dest string) error {
-	if _, err := os.Stat(source); os.IsNotExist(err) {
-		return errors.Wrapf(err, "error source %s does not exist", source)
+// Copy copies a local asset into the container
+func Copy(ociID string, asset assets.CopyAsset) error {
+	if _, err := os.Stat(asset.AssetName); os.IsNotExist(err) {
+		return errors.Wrapf(err, "error source %s does not exist", asset.AssetName)
 	}
 
-	cmd := runner.Command(DefaultOCI, "cp", source, dest)
+	destination := fmt.Sprintf("%s:%s", ociID, asset.TargetPath())
+
+	cmd := runner.Command(DefaultOCI, "cp", asset.AssetName, destination)
 	_, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
-		return errors.Wrapf(err, "error copying %s into node", source)
+		return errors.Wrapf(err, "error copying %s into node", asset.AssetName)
 	}
+
 	return nil
 }

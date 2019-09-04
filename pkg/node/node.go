@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/oci"
 	"github.com/medyagh/kic/pkg/runner"
@@ -85,13 +86,15 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 	return nil
 }
 
-// Copy copies a local file/folder into node.
-// example:
-// node.Copy("/etc/resolve.conf", "/inside_container/test.conf")
-func (n *Node) Copy(source, destination string) error {
-	dest := fmt.Sprintf("%s:%s", n.name, destination)
-	if err := oci.Copy(source, dest); err != nil {
+// Copy copies a local asset into a node.
+func (n *Node) Copy(asset assets.CopyAsset) error {
+	if err := oci.Copy(n.name, asset); err != nil {
 		return errors.Wrap(err, "failed to copy file/folder")
+	}
+
+	cmd := n.Command("chmod", asset.Permissions, asset.TargetPath())
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to chmod file permissions")
 	}
 	return nil
 }
