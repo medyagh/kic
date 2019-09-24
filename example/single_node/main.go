@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/medyagh/kic/example/single_node/mycmder"
 	"github.com/medyagh/kic/pkg/action"
+	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/image"
 	"github.com/medyagh/kic/pkg/node"
@@ -29,6 +31,10 @@ func main() {
 	kubeVersion := flag.String("kubernetes-version", "v1.15.0", "kuberentes version")
 	userImg := flag.String("image", "", "image to load")
 	load := flag.Bool("load", false, "to load an image")
+	copy := flag.Bool("cp", false, "to copy a file/folder into the node")
+	remove := flag.Bool("rm", false, "to rm a file from the node")
+	src := flag.String("src", "", "source file/folder to copy")
+	dest := flag.String("dest", "", "destination to copy file/folder ")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -45,9 +51,10 @@ func main() {
 	if err != nil {
 		klog.Errorf("Error getting proxy details %v", envs)
 	}
+	nodeName := *profile + "-control-plane"
 	ns := &node.Spec{
 		Profile:           *profile,
-		Name:              *profile + "control-plane",
+		Name:              nodeName,
 		Image:             imgSha,
 		CPUs:              *cpus,
 		Memory:            *memory,
@@ -145,12 +152,38 @@ func main() {
 	}
 
 	if *load && len(*userImg) != 0 {
-		node, err := node.Find(*profile+"control-plane", cmder)
+		node, err := node.Find(nodeName, cmder)
 		if err != nil {
 			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
 			os.Exit(1)
 		}
 		loadImage(*userImg, node)
+	}
+
+	if *copy {
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error finding node %s: %v", *userImg, err)
+			os.Exit(1)
+		}
+		err = copyAsset(node, *src, *dest)
+		if err != nil {
+			klog.Errorf("error copying asset src: %s dest: %s, err: %v", *src, *dest, err)
+			os.Exit(1)
+		}
+	}
+
+	if *remove {
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error finding node %s: %v", *userImg, err)
+			os.Exit(1)
+		}
+		err = node.Remove(*src)
+		if err != nil {
+			klog.Errorf("error removing file %s: %v", *src, *dest, err)
+			os.Exit(1)
+		}
 	}
 }
 
@@ -232,4 +265,24 @@ func getProxyEnvs() (map[string]string, error) {
 	}
 
 	return envs, nil
+}
+
+func copyAsset(n *node.Node, src, dest string) error {
+	fileInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	targetDir := path.Dir(dest)
+	targetName := path.Base(dest)
+
+	asset := assets.CopyAsset{
+		AssetName:   fileInfo.Name(),
+		TargetName:  targetName,
+		TargetDir:   targetDir,
+		Length:      fileInfo.Size(),
+		Permissions: "0777",
+	}
+
+	return n.Copy(asset)
 }

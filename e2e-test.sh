@@ -46,12 +46,12 @@ curl http://localhost:8080/
 
 
 # test config file content and perm on the node
-docker exec m5control-plane cat /kic/kubeadm.conf | grep  apiServerEndpoint
-docker exec m5control-plane stat -c '%a' kic/kubeadm.conf | grep 644
+docker exec m5-control-plane cat /kic/kubeadm.conf | grep  apiServerEndpoint
+docker exec m5-control-plane stat -c '%a' kic/kubeadm.conf | grep 644
 # todo check if it is right permission
 
 # check that container was creatred for control-plane
-docker ps || grep "m5control-plane"
+docker ps || grep "m5-control-plane"
 
 
 # pulling an image to load to a new kic cluster
@@ -60,15 +60,24 @@ docker pull busybox
 docker tag busybox e2e-example-img
 docker images || true  # list images after
 
-## Creatre a second cluster test and load an image to it.
+## Create a second cluster test and load an image to it.
 echo "Starting a second cluster" && ./out/e2e -start -profile cluster2 
 
 ## load an image from user machine to cluster
 echo "Loading image from user machine to cluster" && ./out/e2e -profile cluster2  -image e2e-example-img -load=true
-echo "Checking if image is loaded" && docker exec cluster2control-plane ctr -n k8s.io images ls  | grep e2e-example-img
+echo "Checking if image is loaded" && docker exec cluster2-control-plane ctr -n k8s.io images ls  | grep e2e-example-img
+
+## copy file from user machine to cluster
+touch copy-test.txt
+echo "copy test" > copy-test.txt
+echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2 -cp=true -src=copy-test.txt -dest=/etc/copy-test.txt
+echo "Checking if file was copied" && docker exec cluster2-control-plane cat /etc/copy-test.txt | grep "copy test"
+
+## remove file from cluster
+echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm=true -src=/etc/copy-test.txt
+echo "Checking if file was removed" && docker exec cluster2-control-plane test ! -f /etc/copy-test.txt
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
 
 lsof -ti tcp:8080 | xargs kill || true
-
