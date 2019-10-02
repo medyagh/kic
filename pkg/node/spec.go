@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/medyagh/kic/pkg/config/cri"
+	"github.com/medyagh/kic/pkg/oci"
 	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 )
@@ -75,12 +76,7 @@ func (d *Spec) Stop() error {
 }
 
 func (d *Spec) Delete() error {
-	cmd := runner.Command("docker", "rm", "-f", "-v", d.Name)
-	_, err := runner.CombinedOutputLines(cmd)
-	if err != nil {
-		return errors.Wrapf(err, "deleting node")
-	}
-	return nil
+	return oci.Delete(d.Name)
 }
 
 // ListNodes lists all the nodes (containers) created by kic on the system
