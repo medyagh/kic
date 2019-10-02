@@ -173,8 +173,7 @@ func CreateNode(p CreateParams, cmder runner.Cmder) (*Node, error) {
 	)
 
 	// we should return a handle so the caller can clean it up
-	node := FromName(p.Name)
-	node.cmder = cmder
+	node := fromName(p.Name, cmder)
 	if err != nil {
 		return node, fmt.Errorf("docker run error %v", err)
 	}
@@ -182,21 +181,21 @@ func CreateNode(p CreateParams, cmder runner.Cmder) (*Node, error) {
 	return node, nil
 }
 
-// FromName creates a node handle from the node' Name
-func FromName(name string) *Node {
-	return &Node{
-		name:  name,
-		cache: &nodeCache{},
-	}
-}
-
 // Find finds a node
 func Find(name string, cmder runner.Cmder) (*Node, error) {
-	// TODO: check node exists
+	_, err := oci.Inspect(name, "{{.Id}}")
+	if err != nil {
+		return nil, fmt.Errorf("can't find node %v", err)
+	}
 
+	return fromName(name, cmder), nil
+}
+
+// fromName creates a node handle from the node' Name
+func fromName(name string, cmder runner.Cmder) *Node {
 	return &Node{
 		name:  name,
 		cache: &nodeCache{},
 		cmder: cmder,
-	}, nil
+	}
 }
