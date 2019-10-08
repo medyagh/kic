@@ -66,7 +66,8 @@ func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	}
 }
 
-func (d *Spec) Stop() error {
+// Pause pauses all process in a node
+func (d *Spec) Pause() error {
 	return oci.Pause(d.Name)
 }
 
