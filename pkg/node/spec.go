@@ -66,13 +66,9 @@ func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	}
 }
 
-func (d *Spec) Stop() error {
-	cmd := runner.Command("docker", "pause", d.Name)
-	_, err := runner.CombinedOutputLines(cmd)
-	if err != nil {
-		return errors.Wrapf(err, "stopping node")
-	}
-	return nil
+// Pause pauses all process in a node
+func (d *Spec) Pause() error {
+	return oci.Pause(d.Name)
 }
 
 func (d *Spec) Delete() error {
