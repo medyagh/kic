@@ -44,7 +44,6 @@ kubectl port-forward service/hello-minikube 8080 &
 sleep 3
 curl http://localhost:8080/
 
-
 # test config file content and perm on the node
 docker exec m5-control-plane cat /kic/kubeadm.conf | grep  apiServerEndpoint
 docker exec m5-control-plane stat -c '%a' kic/kubeadm.conf | grep 644
@@ -52,7 +51,6 @@ docker exec m5-control-plane stat -c '%a' kic/kubeadm.conf | grep 644
 
 # check that container was creatred for control-plane
 docker ps || grep "m5-control-plane"
-
 
 # pulling an image to load to a new kic cluster
 docker images || true  # list images before
@@ -76,6 +74,10 @@ echo "Checking if file was copied" && docker exec cluster2-control-plane cat /et
 ## remove file from cluster
 echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm=true -src=/etc/copy-test.txt
 echo "Checking if file was removed" && docker exec cluster2-control-plane test ! -f /etc/copy-test.txt
+
+## pause a node
+echo "Pausing a node" && ./out/e2e -pause -profile cluster2
+echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
 
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
