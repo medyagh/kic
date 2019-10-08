@@ -79,6 +79,10 @@ echo "Checking if file was removed" && docker exec cluster2-control-plane test !
 echo "Pausing a node" && ./out/e2e -pause -profile cluster2
 echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
 
+## stop a node
+echo "Stopping a node" && ./out/e2e -stop -profile cluster2
+echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
+
 # delete our cluster in the end
 ./out/e2e -delete -profile cluster2
 
