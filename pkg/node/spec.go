@@ -71,6 +71,11 @@ func (d *Spec) Pause() error {
 	return oci.Pause(d.Name)
 }
 
+// Stop stops a node
+func (d *Spec) Stop() error {
+	return oci.Stop(d.Name)
+}
+
 func (d *Spec) Delete() error {
 	return oci.Delete(d.Name)
 }
