@@ -35,7 +35,8 @@ func main() {
 	remove := flag.Bool("rm", false, "to rm a file from the node")
 	src := flag.String("src", "", "source file/folder to copy")
 	dest := flag.String("dest", "", "destination to copy file/folder ")
-	pause := flag.Bool("pause", false, "Pause all processes within one or more containers")
+	pause := flag.Bool("pause", false, "pause all processes within one or more containers")
+	stop := flag.Bool("stop", false, "stop a container")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -191,6 +192,13 @@ func main() {
 		err := ns.Pause()
 		if err != nil {
 			klog.Errorf("Error pausing node %s %v", ns.Name, err)
+		}
+	}
+
+	if *stop {
+		err := ns.Stop()
+		if err != nil {
+			klog.Errorf("Error stop node %s %v", ns.Name, err)
 		}
 	}
 }
