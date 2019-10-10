@@ -6,7 +6,7 @@ import (
 	"github.com/medyagh/kic/pkg/runner"
 )
 
-/// RunKubeadmInit runs kubeadm init on a node
+// RunKubeadmInit runs kubeadm init on a node
 func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath string, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
 	cmd := r.Command(
 		// init because this is the control plane node
@@ -26,7 +26,9 @@ func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath string, hostIP string, hostPo
 	return lines, nil
 }
 
-func RunTaint(r runner.Cmder) error {
+// RemoveMasterTaint removes the master node taint.
+// This allows pods to be scheduled on the master node.
+func RemoveMasterTaint(r runner.Cmder) error {
 	// if we are only provisioning one node, remove the master taint
 	// https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#master-isolation
 	if err := r.Command(
