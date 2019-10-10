@@ -13,7 +13,7 @@ make out/e2e
 
 # clean up the previous runs (if any)
 lsof -ti tcp:8080 | xargs kill || true
-./out/e2e -remove -profile m5
+./out/e2e -remove -profile m5 || true
 
 # start a cluster
 echo "Starting a cluster with 2 cpu and 2 GB ram" && ./out/e2e -start -profile m5 -cpu 2 -memory 2000m
