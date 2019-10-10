@@ -74,7 +74,7 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 	return ips[0], ips[1], nil
 }
 
-// LoadImageArchive loads an image form archive into node
+// LoadImageArchive loads an image from archive into the node
 func (n *Node) LoadImageArchive(image io.Reader) error {
 	cmd := n.Command(
 		"ctr", "--namespace=k8s.io", "images", "import", "-",
@@ -86,7 +86,7 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 	return nil
 }
 
-// Copy copies a local asset into a node.
+// Copy copies a local asset into the node
 func (n *Node) Copy(asset assets.CopyAsset) error {
 	if err := oci.Copy(n.name, asset); err != nil {
 		return errors.Wrap(err, "failed to copy file/folder")
@@ -99,13 +99,19 @@ func (n *Node) Copy(asset assets.CopyAsset) error {
 	return nil
 }
 
-// Remove removes a file from node
-func (n *Node) Remove(source string) error {
-	cmd := n.Command("rm", source)
-	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, "failed to remove file")
-	}
-	return nil
+// Pause pauses all process in the node
+func (n *Node) Pause() error {
+	return oci.Pause(n.name)
+}
+
+// Stop stops the node
+func (n *Node) Stop() error {
+	return oci.Stop(n.name)
+}
+
+// Remove removes the node
+func (n *Node) Remove() error {
+	return oci.Remove(n.name)
 }
 
 // Command returns a new runner.Cmd that will run on the node

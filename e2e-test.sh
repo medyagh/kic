@@ -13,7 +13,7 @@ make out/e2e
 
 # clean up the previous runs (if any)
 lsof -ti tcp:8080 | xargs kill || true
-./out/e2e -delete -profile m5
+./out/e2e -remove -profile m5
 
 # start a cluster
 echo "Starting a cluster with 2 cpu and 2 GB ram" && ./out/e2e -start -profile m5 -cpu 2 -memory 2000m
@@ -68,11 +68,11 @@ echo "Checking if image is loaded" && docker exec cluster2-control-plane ctr -n 
 ## copy file from user machine to cluster
 touch copy-test.txt
 echo "copy test" > copy-test.txt
-echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2 -cp=true -src=copy-test.txt -dest=/etc/copy-test.txt
+echo "Copying file from user machine to cluster" && ./out/e2e -profile cluster2 -cp -src=copy-test.txt -dest=/etc/copy-test.txt
 echo "Checking if file was copied" && docker exec cluster2-control-plane cat /etc/copy-test.txt | grep "copy test"
 
 ## remove file from cluster
-echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm=true -src=/etc/copy-test.txt
+echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm-file -src=/etc/copy-test.txt
 echo "Checking if file was removed" && docker exec cluster2-control-plane test ! -f /etc/copy-test.txt
 
 ## pause a node
@@ -83,7 +83,7 @@ echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}
 echo "Stopping a node" && ./out/e2e -stop -profile cluster2
 echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
 
-# delete our cluster in the end
-./out/e2e -delete -profile cluster2
+# remove our cluster in the end
+./out/e2e -remove -profile cluster2
 
 lsof -ti tcp:8080 | xargs kill || true
