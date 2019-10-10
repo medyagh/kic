@@ -117,7 +117,7 @@ func main() {
 			klog.Errorf("failed to RunKubeadmInit : %v", err)
 		}
 
-		err = action.RunTaint(node)
+		err = action.RemoveMasterTaint(node)
 		if err != nil {
 			klog.Errorf("failed to RunTaint : %v", err)
 		}
