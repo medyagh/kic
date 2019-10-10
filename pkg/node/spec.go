@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/oci"
 	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 )
@@ -64,20 +63,6 @@ func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
 	default:
 		return nil, fmt.Errorf("unknown node role: %s", d.Role)
 	}
-}
-
-// Pause pauses all process in a node
-func (d *Spec) Pause() error {
-	return oci.Pause(d.Name)
-}
-
-// Stop stops a node
-func (d *Spec) Stop() error {
-	return oci.Stop(d.Name)
-}
-
-func (d *Spec) Delete() error {
-	return oci.Delete(d.Name)
 }
 
 // ListNodes lists all the nodes (containers) created by kic on the system

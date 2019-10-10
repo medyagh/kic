@@ -23,7 +23,7 @@ import (
 
 func main() {
 	profile := flag.String("profile", "p1", "profile name")
-	delete := flag.Bool("delete", false, "to delete")
+	remove := flag.Bool("remove", false, "to remove")
 	start := flag.Bool("start", false, "to start")
 	hostIP := flag.String("host-ip", "127.0.0.1", "node's ip")
 	cpus := flag.String("cpu", "2", "number of cpus to dedicate to the node")
@@ -32,7 +32,7 @@ func main() {
 	userImg := flag.String("image", "", "image to load")
 	load := flag.Bool("load", false, "to load an image")
 	copy := flag.Bool("cp", false, "to copy a file/folder into the node")
-	remove := flag.Bool("rm", false, "to rm a file from the node")
+	rmFile := flag.Bool("rm-file", false, "to rm a file from the node")
 	src := flag.String("src", "", "source file/folder to copy")
 	dest := flag.String("dest", "", "destination to copy file/folder ")
 	pause := flag.Bool("pause", false, "pause all processes within one or more containers")
@@ -144,11 +144,17 @@ func main() {
 
 	}
 
-	if *delete {
-		fmt.Printf("Deleting ... %s\n", *profile)
-		err = ns.Delete()
+	if *remove {
+		fmt.Printf("Removing ... %s\n", *profile)
+		node, err := node.Find(nodeName, cmder)
 		if err != nil {
-			klog.Errorf("failed to delete cluster %s : %v", *profile, err)
+			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
+			os.Exit(1)
+		}
+
+		err = node.Remove()
+		if err != nil {
+			klog.Errorf("failed to remove cluster %s : %v", *profile, err)
 		}
 
 	}
@@ -175,28 +181,41 @@ func main() {
 		}
 	}
 
-	if *remove {
+	if *rmFile {
 		node, err := node.Find(nodeName, cmder)
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
 		}
-		err = node.Remove(*src)
-		if err != nil {
-			klog.Errorf("error removing file %s: %v", *src, *dest, err)
+
+		cmd := node.Command("rm", *src)
+		if err := cmd.Run(); err != nil {
+			klog.Errorf("error removing file %s: %v", *src, err)
 			os.Exit(1)
 		}
 	}
 
 	if *pause {
-		err := ns.Pause()
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error finding node %s: %v", *userImg, err)
+			os.Exit(1)
+		}
+
+		err = node.Pause()
 		if err != nil {
 			klog.Errorf("Error pausing node %s %v", ns.Name, err)
 		}
 	}
 
 	if *stop {
-		err := ns.Stop()
+		node, err := node.Find(nodeName, cmder)
+		if err != nil {
+			klog.Errorf("error finding node %s: %v", *userImg, err)
+			os.Exit(1)
+		}
+
+		err = node.Stop()
 		if err != nil {
 			klog.Errorf("Error stop node %s %v", ns.Name, err)
 		}
