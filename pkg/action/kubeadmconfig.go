@@ -8,6 +8,7 @@ import (
 	"github.com/medyagh/kic/pkg/config/kustomize"
 )
 
+// KubeAdmCfg returns the kubeadm config
 func KubeAdmCfg(cd ConfigData) (string, error) {
 	clusterCfg := &cluster.Config{}
 	config, err := templateExec(cd)
@@ -24,9 +25,8 @@ func KubeAdmCfg(cd ConfigData) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return removeMetadata(patched), nil
 
-	// return writeKubeadmConfig(clusterConfig, configData, node)
+	return removeMetadata(patched), nil
 }
 
 // trims out the metadata.name we put in the config for kustomize matching,
