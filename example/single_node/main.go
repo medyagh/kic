@@ -89,6 +89,8 @@ func main() {
 			klog.Errorf("Error getting node ip: %s error: %v", ip, err)
 		}
 
+		podNetworkCIDR := "10.244.0.0/16"
+
 		cfg := action.ConfigData{
 			ClusterName:          *profile,
 			KubernetesVersion:    *kubeVersion,
@@ -96,7 +98,7 @@ func main() {
 			APIBindPort:          6443,
 			APIServerAddress:     *hostIP,
 			Token:                "abcdef.0123456789abcdef",
-			PodSubnet:            "10.244.0.0/16",
+			PodSubnet:            podNetworkCIDR,
 			ServiceSubnet:        "10.96.0.0/12",
 			ControlPlane:         true,
 			IPv6:                 false,
@@ -112,7 +114,7 @@ func main() {
 			klog.Errorf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		_, err = action.RunKubeadmInit(node, kaCfgPath, *hostIP, hostPort, *profile)
+		_, err = action.RunKubeadmInit(node, kaCfgPath, *profile)
 		if err != nil {
 			klog.Errorf("failed to RunKubeadmInit : %v", err)
 		}
@@ -122,9 +124,14 @@ func main() {
 			klog.Errorf("failed to RunTaint : %v", err)
 		}
 
-		err = action.InstallCNI(node, "10.244.0.0/16")
+		cniManifest, err := action.GetDefaultCNIManifest(node, podNetworkCIDR)
 		if err != nil {
 			klog.Errorf("failed to InstallCNI : %v", err)
+		}
+
+		err = action.ApplyCNIManifest(node, cniManifest)
+		if err != nil {
+			klog.Errorf("failed to ApplyCNI : %v", err)
 		}
 
 		if len(*userImg) != 0 {

@@ -7,7 +7,7 @@ import (
 )
 
 // RunKubeadmInit runs kubeadm init on a node
-func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath string, hostIP string, hostPort int32, profile string) ([]string, error) { // run kubeadm
+func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath, profile string) ([]string, error) { // run kubeadm
 	cmd := r.Command(
 		// init because this is the control plane node
 		"kubeadm", "init",
