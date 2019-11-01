@@ -3,9 +3,9 @@ package oci
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/medyagh/kic/pkg/assets"
-	"github.com/medyagh/kic/pkg/runner"
 
 	"github.com/pkg/errors"
 )
@@ -17,12 +17,10 @@ func Copy(ociID string, asset assets.CopyAsset) error {
 	}
 
 	destination := fmt.Sprintf("%s:%s", ociID, asset.TargetPath())
-
-	cmd := runner.Command(DefaultOCI, "cp", asset.AssetName, destination)
-	_, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command(DefaultOCI, "cp", asset.AssetName, destination)
+	err := cmd.Run()
 	if err != nil {
 		return errors.Wrapf(err, "error copying %s into node", asset.AssetName)
 	}
-
 	return nil
 }

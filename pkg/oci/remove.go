@@ -1,7 +1,7 @@
 package oci
 
 import (
-	"github.com/medyagh/kic/pkg/runner"
+	"os/exec"
 
 	"github.com/pkg/errors"
 )
@@ -9,9 +9,8 @@ import (
 // Remove removes a container
 func Remove(ociID string) error {
 	// TODO: force remove should be an option
-	cmd := runner.Command(DefaultOCI, "rm", "-f", "-v", ociID)
-	_, err := runner.CombinedOutputLines(cmd)
-	if err != nil {
+	cmd := exec.Command(DefaultOCI, "rm", "-f", "-v", ociID)
+	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "error removing node %s", ociID)
 	}
 

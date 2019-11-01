@@ -1,16 +1,15 @@
 package oci
 
 import (
-	"github.com/medyagh/kic/pkg/runner"
+	"os/exec"
 
 	"github.com/pkg/errors"
 )
 
 // Pause pauses a container
 func Pause(ociID string) error {
-	cmd := runner.Command(DefaultOCI, "pause", ociID)
-	_, err := runner.CombinedOutputLines(cmd)
-	if err != nil {
+	cmd := exec.Command(DefaultOCI, "pause", ociID)
+	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "error pausing node %s", ociID)
 	}
 
