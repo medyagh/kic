@@ -35,7 +35,7 @@ type Node struct {
 func (n *Node) WriteFile(dest, content string, perm string) error {
 	// create destination directory
 	cmd := n.Command("mkdir", "-p", filepath.Dir(dest))
-	_, err := runner.RunLoggingOutputOnFail(cmd)
+	_, err := runner.CombinedOutputLines(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", dest)
 	}

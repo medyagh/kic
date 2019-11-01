@@ -24,12 +24,6 @@ func (c *LocalCmder) Command(name string, arg ...string) Cmd {
 	}
 }
 
-// SetEnv sets env
-func (cmd *LocalCmd) SetEnv(env ...string) Cmd {
-	cmd.Env = env
-	return cmd
-}
-
 // SetStdin sets stdin
 func (cmd *LocalCmd) SetStdin(r io.Reader) Cmd {
 	cmd.Stdin = r

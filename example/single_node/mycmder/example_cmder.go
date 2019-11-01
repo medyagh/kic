@@ -90,11 +90,6 @@ func (c *containerCmd) Run() error {
 	return cmd.Run()
 }
 
-func (c *containerCmd) SetEnv(env ...string) runner.Cmd {
-	c.env = env
-	return c
-}
-
 func (c *containerCmd) SetStdin(r io.Reader) runner.Cmd {
 	c.stdin = r
 	return c
