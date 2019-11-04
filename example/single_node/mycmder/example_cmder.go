@@ -1,10 +1,16 @@
 package mycmder
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"time"
 
 	"github.com/medyagh/kic/pkg/runner"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -14,7 +20,7 @@ import (
 const defaultOCI = "docker"
 
 // New creates a new implementor of runner.Cmder
-func New(containerNameOrID string) runner.Cmder {
+func New(containerNameOrID string) runner.Runner {
 	return &containerCmder{
 		nameOrID: containerNameOrID,
 	}
@@ -25,44 +31,25 @@ type containerCmder struct {
 	nameOrID string
 }
 
-func (c *containerCmder) Command(command string, args ...string) runner.Cmd {
-	return &containerCmd{
-		nameOrID: c.nameOrID,
-		command:  command,
-		args:     args,
-	}
-}
-
-// containerCmd implements runner.Cmd for docker containers
-type containerCmd struct {
-	nameOrID string // the container name or ID
-	command  string
-	args     []string
-	env      []string
-	stdin    io.Reader
-	stdout   io.Writer
-	stderr   io.Writer
-}
-
-func (c *containerCmd) Run() error {
+func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*runner.RunResult, error) { // TODO:medya change name to runner
 	args := []string{
 		"exec",
 		// run with privileges so we can remount etc..
 		"--privileged",
 	}
-	if c.stdin != nil {
+	if cmd.Stdin != nil {
 		args = append(args,
 			"-i", // interactive so we can supply input
 		)
 	}
 	// if the command is hooked up to the processes's output we want a tty
-	if IsTerminal(c.stderr) || IsTerminal(c.stdout) {
+	if IsTerminal(cmd.Stderr) || IsTerminal(cmd.Stdout) {
 		args = append(args,
 			"-t",
 		)
 	}
 	// set env
-	for _, env := range c.env {
+	for _, env := range cmd.Env {
 		args = append(args, "-e", env)
 	}
 	// specify the container and command, after this everything will be
@@ -70,44 +57,57 @@ func (c *containerCmd) Run() error {
 	args = append(
 		args,
 		c.nameOrID, // ... against the container
-		c.command,  // with the command specified
 	)
+
 	args = append(
 		args,
-		// finally, with the caller args
-		c.args...,
+		cmd.Args...,
 	)
-	cmd := runner.Command(defaultOCI, args...)
-	if c.stdin != nil {
-		cmd.SetStdin(c.stdin)
+	cmd2 := exec.Command("docker", args...)
+	cmd2.Stdin = cmd.Stdin
+	cmd2.Stdout = cmd.Stdout
+	cmd2.Stderr = cmd.Stderr
+	cmd2.Env = cmd.Env
+
+	rr := &runner.RunResult{Args: cmd.Args}
+
+	var outb, errb io.Writer
+	if cmd2.Stdout == nil {
+		var so bytes.Buffer
+		outb = io.MultiWriter(&so, &rr.Stdout)
+	} else {
+		outb = io.MultiWriter(cmd2.Stdout, &rr.Stdout)
 	}
-	if c.stderr != nil {
-		cmd.SetStderr(c.stderr)
+
+	if cmd2.Stderr == nil {
+		var se bytes.Buffer
+		errb = io.MultiWriter(&se, &rr.Stderr)
+	} else {
+		errb = io.MultiWriter(cmd2.Stderr, &rr.Stderr)
 	}
-	if c.stdout != nil {
-		cmd.SetStdout(c.stdout)
+
+	cmd2.Stdout = outb
+	cmd2.Stderr = errb
+
+	start := time.Now()
+
+	err := cmd2.Run()
+	elapsed := time.Since(start)
+	if err == nil {
+		// Reduce log spam
+		if elapsed > (1 * time.Second) {
+			klog.Infof("(ExecRunner) Done: %v: (%s)", cmd2.Args, elapsed)
+		}
+	} else {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			rr.ExitCode = exitError.ExitCode()
+		}
+		fmt.Printf("(ExecRunner) Non-zero exit: %v: %v (%s)\n", cmd2.Args, err, elapsed)
+		fmt.Printf("(ExecRunner) Output:\n %q \n", rr.Output())
+		err = errors.Wrapf(err, "command failed: %s", cmd2.Args)
 	}
-	return cmd.Run()
-}
+	return rr, err
 
-func (c *containerCmd) SetEnv(env ...string) runner.Cmd {
-	c.env = env
-	return c
-}
-
-func (c *containerCmd) SetStdin(r io.Reader) runner.Cmd {
-	c.stdin = r
-	return c
-}
-
-func (c *containerCmd) SetStdout(w io.Writer) runner.Cmd {
-	c.stdout = w
-	return c
-}
-
-func (c *containerCmd) SetStderr(w io.Writer) runner.Cmd {
-	c.stderr = w
-	return c
 }
 
 // IsTerminal returns true if the writer w is a terminal

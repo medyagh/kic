@@ -1,11 +1,13 @@
 package action
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 
@@ -15,15 +17,22 @@ import (
 )
 
 // rename generate based on /etc/...
-func GenerateKubeConfig(r runner.Cmder, hostIP string, hostPort int32, profile string) ([]byte, error) {
-	cmd := r.Command("cat", "/etc/kubernetes/admin.conf")
-	lines, err := runner.CombinedOutputLines(cmd)
+func GenerateKubeConfig(r runner.Runner, hostIP string, hostPort int32, profile string) ([]byte, error) {
+	cmd := exec.Command("cat", "/etc/kubernetes/admin.conf")
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	_, err := r.RunCmd(cmd)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get kubeconfig from node")
 	}
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 
 	// fix the config file, swapping out the server for the forwarded localhost:port
-	var buff bytes.Buffer
 	for _, line := range lines {
 		match := serverAddressRE.FindStringSubmatch(line)
 		if len(match) > 1 {

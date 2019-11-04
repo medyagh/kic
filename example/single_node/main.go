@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -111,25 +112,25 @@ func main() {
 		kaCfgPath := "/kic/kubeadm.conf"
 		// copy the config to the node
 		if err := node.WriteFile(kaCfgPath, kCfg, "644"); err != nil {
-			klog.Errorf("failed to copy kubeadm config to node : %v", err)
+			klog.Fatalf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		_, err = action.RunKubeadmInit(node, kaCfgPath, *profile)
+		err = action.RunKubeadmInit(node.Cmder, kaCfgPath, *profile)
 		if err != nil {
 			klog.Errorf("failed to RunKubeadmInit : %v", err)
 		}
 
-		err = action.RemoveMasterTaint(node)
+		err = action.RemoveMasterTaint(node.Cmder)
 		if err != nil {
 			klog.Errorf("failed to RunTaint : %v", err)
 		}
 
-		cniManifest, err := action.GetDefaultCNIManifest(node, podNetworkCIDR)
+		cniManifest, err := action.GetDefaultCNIManifest(node.Cmder, podNetworkCIDR)
 		if err != nil {
 			klog.Errorf("failed to InstallCNI : %v", err)
 		}
 
-		err = action.ApplyCNIManifest(node, cniManifest)
+		err = action.ApplyCNIManifest(node.Cmder, cniManifest)
 		if err != nil {
 			klog.Errorf("failed to ApplyCNI : %v", err)
 		}
@@ -138,7 +139,7 @@ func main() {
 			loadImage(*userImg, node)
 		}
 
-		c, err := action.GenerateKubeConfig(node, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+		c, err := action.GenerateKubeConfig(node.Cmder, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		if err != nil {
 			klog.Errorf("failed to GenerateKubeConfig : %v", err)
 		}
@@ -189,14 +190,14 @@ func main() {
 	}
 
 	if *rmFile {
-		node, err := node.Find(nodeName, cmder)
+		_, err := node.Find(nodeName, cmder) // MEDYA:TODO use node runner
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
 		}
 
-		cmd := node.Command("rm", *src)
-		if err := cmd.Run(); err != nil {
+		cmd := exec.Command("rm", *src)
+		if _, err := cmder.RunCmd(cmd); err != nil {
 			klog.Errorf("error removing file %s: %v", *src, err)
 			os.Exit(1)
 		}

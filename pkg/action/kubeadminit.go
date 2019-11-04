@@ -1,14 +1,16 @@
 package action
 
 import (
+	"os/exec"
+
 	"github.com/pkg/errors"
 
 	"github.com/medyagh/kic/pkg/runner"
 )
 
 // RunKubeadmInit runs kubeadm init on a node
-func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath, profile string) ([]string, error) { // run kubeadm
-	cmd := r.Command(
+func RunKubeadmInit(r runner.Runner, kubeadmCfgPath, profile string) error { // run kubeadm
+	cmd := exec.Command(
 		// init because this is the control plane node
 		"kubeadm", "init",
 		"--ignore-preflight-errors=all",
@@ -18,23 +20,25 @@ func RunKubeadmInit(r runner.Cmder, kubeadmCfgPath, profile string) ([]string, e
 		// increase verbosity for debugging
 		"--v=6",
 	)
-	lines, err := runner.CombinedOutputLines(cmd)
+	_, err := r.RunCmd(cmd)
 	if err != nil {
-		return lines, errors.Wrap(err, "failed to init node with kubeadm")
+		return errors.Wrap(err, "failed to init node with kubeadm")
 	}
 
-	return lines, nil
+	return nil
 }
 
 // RemoveMasterTaint removes the master node taint.
 // This allows pods to be scheduled on the master node.
-func RemoveMasterTaint(r runner.Cmder) error {
+func RemoveMasterTaint(r runner.Runner) error {
 	// if we are only provisioning one node, remove the master taint
 	// https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#master-isolation
-	if err := r.Command(
+	cmd := exec.Command(
 		"kubectl", "--kubeconfig=/etc/kubernetes/admin.conf",
 		"taint", "nodes", "--all", "node-role.kubernetes.io/master-",
-	).Run(); err != nil {
+	)
+
+	if _, err := r.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to remove master taint")
 	}
 	return nil

@@ -1,14 +1,16 @@
 package oci
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"net"
+	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff"
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 )
 
@@ -17,21 +19,37 @@ const DefaultOCI = "docker"
 
 // Inspect return low-level information on containers
 func Inspect(containerNameOrID, format string) ([]string, error) {
-	cmd := runner.Command(DefaultOCI, "inspect",
-		"-f", format,
-		containerNameOrID, // ... against the "node" container
-	)
 
-	return runner.CombinedOutputLines(cmd)
+	cmd := exec.Command(DefaultOCI, "inspect",
+		"-f", format,
+		containerNameOrID) // ... against the "node" container
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, err
 }
 
 // NetworkInspect displays detailed information on one or more networks
 func NetworkInspect(networkNames []string, format string) ([]string, error) {
-	cmd := runner.Command("docker", "network", "inspect",
+	cmd := exec.Command("docker", "network", "inspect",
 		"-f", format,
-		strings.Join(networkNames, " "),
-	)
-	return runner.CombinedOutputLines(cmd)
+		strings.Join(networkNames, " "))
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, err
 }
 
 // GetSubnets returns a slice of subnets for a specified network name
@@ -48,12 +66,20 @@ func GetSubnets(networkName string) ([]string, error) {
 
 // ImageInspect return low-level information on containers images
 func ImageInspect(containerNameOrID, format string) ([]string, error) {
-	cmd := runner.Command("docker", "image", "inspect",
+	cmd := exec.Command("docker", "image", "inspect",
 		"-f", format,
 		containerNameOrID,
 	)
-
-	return runner.CombinedOutputLines(cmd)
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, err
 }
 
 // ImageID return the Id of the container image
@@ -116,7 +142,7 @@ func generateMountBindings(mounts ...cri.Mount) []string {
 
 // PullIfNotPresent pulls docker image if not present back off exponentially
 func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) error {
-	cmd := runner.Command(DefaultOCI, "inspect", "--type=image", image)
+	cmd := exec.Command(DefaultOCI, "inspect", "--type=image", image)
 	err := cmd.Run()
 	if err == nil && !forceUpdate {
 		return nil // if presents locally and not force
@@ -131,7 +157,8 @@ func PullIfNotPresent(image string, forceUpdate bool, maxWait time.Duration) err
 
 // Pull pulls an image, retrying up to retries times
 func pull(image string) error {
-	err := runner.Command(DefaultOCI, "pull", image).Run()
+	cmd := exec.Command(DefaultOCI, "pull", image)
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error pull image %s : %v", image, err)
 	}
@@ -140,8 +167,16 @@ func pull(image string) error {
 
 // UsernsRemap checks if userns-remap is enabled in dockerd
 func UsernsRemap() bool {
-	cmd := runner.Command(DefaultOCI, "info", "--format", "'{{json .SecurityOptions}}'")
-	lines, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command(DefaultOCI, "info", "--format", "'{{json .SecurityOptions}}'")
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 	if err != nil {
 		return false
 	}
@@ -170,8 +205,16 @@ func generatePortMappings(portMappings ...cri.PortMapping) []string {
 
 // Save saves an image archive "docker/podman save"
 func Save(image, dest string) error {
-	cmd := runner.Command(DefaultOCI, "save", "-o", dest, image)
-	lines, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command(DefaultOCI, "save", "-o", dest, image)
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 	if err != nil {
 		return errors.Wrapf(err, "saving image to tar failed, output %s", lines[0])
 	}

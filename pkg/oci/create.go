@@ -1,8 +1,11 @@
 package oci
 
 import (
+	"bufio"
+	"bytes"
+	"os/exec"
+
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/runner"
 	"github.com/pkg/errors"
 )
 
@@ -36,8 +39,16 @@ func CreateContainer(image string, opts ...CreateOpt) ([]string, error) {
 	args = append(args, runArgs...)
 	args = append(args, image)
 	args = append(args, o.ContainerArgs...)
-	cmd := runner.Command(DefaultOCI, args...)
-	output, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command(DefaultOCI, args...)
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	var output []string
+	for scanner.Scan() {
+		output = append(output, scanner.Text())
+	}
 	// TODO : check for exist status 125 that means it alread exists, we can re-start it
 	// example error:
 	// $ docker run --cpus=2 --memory=2000m -d -t --privileged --security-opt seccomp=unconfined --tmpfs /tmp --tmpfs /run -v /lib/modules:/lib/modules:ro --hostname p1control-plane --name p1control-plane --label io.k8s.sigs.kic.clusterp1 --label io.k8s.sigs.kic.role=control-plane --expose 50182 --publish=127.0.0.1:50182:6443 medyagh/kic:v1.15.0@sha256:1f03b3168ffe8ab43ce170a5729e31b0d53fb3a1af88e1ad1bdf4626fad8a91c
