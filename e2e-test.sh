@@ -47,7 +47,6 @@ curl http://localhost:8080/
 # test config file content and perm on the node
 docker exec m5-control-plane cat /kic/kubeadm.conf | grep  apiServerEndpoint
 docker exec m5-control-plane stat -c '%a' kic/kubeadm.conf | grep 644
-# todo check if it is right permission
 
 # check that container was creatred for control-plane
 docker ps || grep "m5-control-plane"
