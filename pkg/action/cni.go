@@ -3,6 +3,7 @@ package action
 import (
 	"bytes"
 	"html/template"
+	"os/exec"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -11,10 +12,13 @@ import (
 )
 
 // GetDefaultCNIManifest returns the default CNI manifest
-func GetDefaultCNIManifest(r runner.Cmder, subnet string) ([]byte, error) {
+func GetDefaultCNIManifest(r runner.Runner, subnet string) ([]byte, error) {
 	// read the manifest from the node
 	var raw bytes.Buffer
-	if err := r.Command("cat", "/kind/manifests/default-cni.yaml").SetStdout(&raw).Run(); err != nil {
+	cmd := exec.Command("cat", "/kind/manifests/default-cni.yaml")
+	cmd.Stdout = &raw
+
+	if _, err := r.RunCmd(cmd); err != nil {
 		return nil, errors.Wrap(err, "failed to read CNI manifest")
 	}
 	manifest := raw.String()
@@ -43,13 +47,14 @@ func GetDefaultCNIManifest(r runner.Cmder, subnet string) ([]byte, error) {
 }
 
 // ApplyCNIManifest applies a CNI manifest
-func ApplyCNIManifest(r runner.Cmder, manifest []byte) error {
-	if err := r.Command(
+func ApplyCNIManifest(r runner.Runner, manifest []byte) error {
+	cmd := exec.Command(
 		"kubectl", "create", "--kubeconfig=/etc/kubernetes/admin.conf",
 		"-f", "-",
-	).SetStdin(bytes.NewReader(manifest)).Run(); err != nil {
+	)
+	cmd.Stdin = bytes.NewReader(manifest)
+	if _, err := r.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to apply overlay network")
 	}
-
 	return nil
 }

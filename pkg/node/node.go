@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"io"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -28,24 +29,31 @@ type Node struct {
 	name string
 	// cached node info etc.
 	cache *nodeCache
-	cmder runner.Cmder
+	Cmder runner.Runner
 }
 
 // WriteFile writes content to dest on the node
 func (n *Node) WriteFile(dest, content string, perm string) error {
 	// create destination directory
-	cmd := n.Command("mkdir", "-p", filepath.Dir(dest))
-	_, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command("mkdir", "-p", filepath.Dir(dest))
+	rr, err := n.Cmder.RunCmd(cmd)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create directory %s", dest)
+		return errors.Wrapf(err, "failed to create directory %s cmd: %v output:%q", cmd.Args, dest, rr.Output())
 	}
 
-	err = n.Command("cp", "/dev/stdin", dest).SetStdin(strings.NewReader(content)).Run()
-	if err != nil {
-		return errors.Wrapf(err, "failed to run: cp /dev/stdin %s", dest)
+	cmd = exec.Command("cp", "/dev/stdin", dest)
+	cmd.Stdin = strings.NewReader(content)
+
+	if rr, err := n.Cmder.RunCmd(cmd); err != nil {
+		return errors.Wrapf(err, "failed to run: cp /dev/stdin %s cmd: %v output:%q", dest, cmd.Args, rr.Output())
 	}
-	err = n.Command("chmod", perm, dest).Run()
-	return errors.Wrapf(err, "failed to run: chmod %s %s", perm, dest)
+
+	cmd = exec.Command("chmod", perm, dest)
+	_, err = n.Cmder.RunCmd(cmd)
+	if err != nil {
+		return errors.Wrapf(err, "failed to run: chmod %s %s", perm, dest)
+	}
+	return nil
 }
 
 // IP returns the IP address of the node
@@ -76,11 +84,11 @@ func (n *Node) IP() (ipv4 string, ipv6 string, err error) {
 
 // LoadImageArchive loads an image from archive into the node
 func (n *Node) LoadImageArchive(image io.Reader) error {
-	cmd := n.Command(
+	cmd := exec.Command(
 		"ctr", "--namespace=k8s.io", "images", "import", "-",
 	)
-	cmd.SetStdin(image)
-	if err := cmd.Run(); err != nil {
+	cmd.Stdin = image
+	if _, err := n.Cmder.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to load image")
 	}
 	return nil
@@ -92,8 +100,8 @@ func (n *Node) Copy(asset assets.CopyAsset) error {
 		return errors.Wrap(err, "failed to copy file/folder")
 	}
 
-	cmd := n.Command("chmod", asset.Permissions, asset.TargetPath())
-	if err := cmd.Run(); err != nil {
+	cmd := exec.Command("chmod", asset.Permissions, asset.TargetPath())
+	if _, err := n.Cmder.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to chmod file permissions")
 	}
 	return nil
@@ -114,11 +122,6 @@ func (n *Node) Remove() error {
 	return oci.Remove(n.name)
 }
 
-// Command returns a new runner.Cmd that will run on the node
-func (n *Node) Command(command string, args ...string) runner.Cmd {
-	return n.cmder.Command(command, args...)
-}
-
 type CreateParams struct {
 	Name         string // used for container name and hostname
 	Image        string // container image to use to create the node.
@@ -133,7 +136,7 @@ type CreateParams struct {
 }
 
 // todo use a struct for this
-func CreateNode(p CreateParams, cmder runner.Cmder) (*Node, error) {
+func CreateNode(p CreateParams, cmder runner.Runner) (*Node, error) {
 	runArgs := []string{
 		fmt.Sprintf("--cpus=%s", p.Cpus),
 		fmt.Sprintf("--memory=%s", p.Memory),
@@ -188,7 +191,7 @@ func CreateNode(p CreateParams, cmder runner.Cmder) (*Node, error) {
 }
 
 // Find finds a node
-func Find(name string, cmder runner.Cmder) (*Node, error) {
+func Find(name string, cmder runner.Runner) (*Node, error) {
 	_, err := oci.Inspect(name, "{{.Id}}")
 	if err != nil {
 		return nil, fmt.Errorf("can't find node %v", err)
@@ -198,10 +201,10 @@ func Find(name string, cmder runner.Cmder) (*Node, error) {
 }
 
 // fromName creates a node handle from the node' Name
-func fromName(name string, cmder runner.Cmder) *Node {
+func fromName(name string, cmder runner.Runner) *Node {
 	return &Node{
 		name:  name,
 		cache: &nodeCache{},
-		cmder: cmder,
+		Cmder: cmder,
 	}
 }

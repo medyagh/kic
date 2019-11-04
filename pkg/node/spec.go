@@ -1,7 +1,10 @@
 package node
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/medyagh/kic/pkg/config/cri"
@@ -26,7 +29,7 @@ type Spec struct {
 	Envs              map[string]string // environment variables to be passsed to passed to create nodes
 }
 
-func (d *Spec) Create(cmder runner.Cmder) (node *Node, err error) {
+func (d *Spec) Create(cmder runner.Runner) (node *Node, err error) {
 	params := CreateParams{
 		Name:         d.Name,
 		Image:        d.Image,
@@ -77,12 +80,23 @@ func (d *Spec) ListNodes() ([]string, error) {
 		// format to include friendly name and the cluster name
 		"--format", fmt.Sprintf(`{{.Names}}\t{{.Label "%s"}}`, ClusterLabelKey+d.Profile),
 	}
-	cmd := runner.Command("docker", args...)
-	lines, err := runner.CombinedOutputLines(cmd)
+	cmd := exec.Command("docker", args...)
+
+	var buff bytes.Buffer
+	cmd.Stdout = &buff
+	cmd.Stderr = &buff
+	err := cmd.Run()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to list containers for %s", d.Profile))
 
 	}
+
+	lines := []string{}
+	scanner := bufio.NewScanner(&buff)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
 	names := []string{}
 	for _, line := range lines {
 		parts := strings.Split(line, "\t")
