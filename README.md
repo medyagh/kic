@@ -10,7 +10,7 @@ To be used a a library
 - set cpus/ram .
 - start / stop / pause.
 - docker / podman.
-- bring your own command command.
+- bring your own command runner.
 - load images from user host to the cluster.
 
  ### Total lines of code: 1720 
