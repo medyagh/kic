@@ -70,7 +70,7 @@ func main() {
 		Envs:              envs,
 	}
 
-	cmder := mycmder.New(ns.Name)
+	runner := mycmder.New(ns.Name, "docker")
 
 	if *start {
 		fmt.Printf("Starting on port %d\n ", hostPort)
@@ -80,7 +80,7 @@ func main() {
 		}
 
 		// create node
-		node, err := ns.Create(cmder)
+		node, err := ns.Create(runner)
 		if err != nil {
 			klog.Errorf("Error Creating node %s %v", ns.Name, err)
 		}
@@ -115,22 +115,22 @@ func main() {
 			klog.Fatalf("failed to copy kubeadm config to node : %v", err)
 		}
 
-		err = action.RunKubeadmInit(node.Cmder, kaCfgPath, *profile)
+		err = action.RunKubeadmInit(node.R, kaCfgPath, *profile)
 		if err != nil {
 			klog.Errorf("failed to RunKubeadmInit : %v", err)
 		}
 
-		err = action.RemoveMasterTaint(node.Cmder)
+		err = action.RemoveMasterTaint(node.R)
 		if err != nil {
 			klog.Errorf("failed to RunTaint : %v", err)
 		}
 
-		cniManifest, err := action.GetDefaultCNIManifest(node.Cmder, podNetworkCIDR)
+		cniManifest, err := action.GetDefaultCNIManifest(node.R, podNetworkCIDR)
 		if err != nil {
 			klog.Errorf("failed to InstallCNI : %v", err)
 		}
 
-		err = action.ApplyCNIManifest(node.Cmder, cniManifest)
+		err = action.ApplyCNIManifest(node.R, cniManifest)
 		if err != nil {
 			klog.Errorf("failed to ApplyCNI : %v", err)
 		}
@@ -139,7 +139,7 @@ func main() {
 			loadImage(*userImg, node)
 		}
 
-		c, err := action.GenerateKubeConfig(node.Cmder, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
+		c, err := action.GenerateKubeConfig(node.R, *hostIP, hostPort, *profile) // generates from the /etc/ inside container
 		if err != nil {
 			klog.Errorf("failed to GenerateKubeConfig : %v", err)
 		}
@@ -154,7 +154,7 @@ func main() {
 
 	if *remove {
 		fmt.Printf("Removing ... %s\n", *profile)
-		node, err := node.Find(nodeName, cmder)
+		node, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
 			os.Exit(1)
@@ -168,7 +168,7 @@ func main() {
 	}
 
 	if *load && len(*userImg) != 0 {
-		node, err := node.Find(nodeName, cmder)
+		node, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
 			os.Exit(1)
@@ -177,7 +177,7 @@ func main() {
 	}
 
 	if *copy {
-		node, err := node.Find(nodeName, cmder)
+		node, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
@@ -190,21 +190,21 @@ func main() {
 	}
 
 	if *rmFile {
-		_, err := node.Find(nodeName, cmder) // MEDYA:TODO use node runner
+		_, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
 		}
 
 		cmd := exec.Command("rm", *src)
-		if _, err := cmder.RunCmd(cmd); err != nil {
+		if _, err := runner.RunCmd(cmd); err != nil {
 			klog.Errorf("error removing file %s: %v", *src, err)
 			os.Exit(1)
 		}
 	}
 
 	if *pause {
-		node, err := node.Find(nodeName, cmder)
+		node, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)
@@ -217,7 +217,7 @@ func main() {
 	}
 
 	if *stop {
-		node, err := node.Find(nodeName, cmder)
+		node, err := node.Find(nodeName, runner)
 		if err != nil {
 			klog.Errorf("error finding node %s: %v", *userImg, err)
 			os.Exit(1)

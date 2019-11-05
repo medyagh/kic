@@ -8,30 +8,27 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/medyagh/kic/pkg/runner"
+	"github.com/medyagh/kic/pkg/command"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// exampale of bringing your own runner.Cmder
-
-const defaultOCI = "docker"
-
-// New creates a new implementor of runner.Cmder
-func New(containerNameOrID string) runner.Runner {
+// New creates a new implementor of runner
+func New(containerNameOrID string, oci string) command.Runner {
 	return &containerCmder{
 		nameOrID: containerNameOrID,
+		ociBin:   oci,
 	}
 }
 
-// containerCmder implements runner.Cmder for docker containers
 type containerCmder struct {
 	nameOrID string
+	ociBin   string
 }
 
-func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*runner.RunResult, error) { // TODO:medya change name to runner
+func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*command.RunResult, error) {
 	args := []string{
 		"exec",
 		// run with privileges so we can remount etc..
@@ -69,7 +66,7 @@ func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*runner.RunResult, error) { // T
 	cmd2.Stderr = cmd.Stderr
 	cmd2.Env = cmd.Env
 
-	rr := &runner.RunResult{Args: cmd.Args}
+	rr := &command.RunResult{Args: cmd.Args}
 
 	var outb, errb io.Writer
 	if cmd2.Stdout == nil {

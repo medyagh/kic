@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/medyagh/kic/pkg/config/cri"
-	"github.com/medyagh/kic/pkg/runner"
+	"github.com/medyagh/kic/pkg/command"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +29,7 @@ type Spec struct {
 	Envs              map[string]string // environment variables to be passsed to passed to create nodes
 }
 
-func (d *Spec) Create(cmder runner.Runner) (node *Node, err error) {
+func (d *Spec) Create(cmder command.Runner) (node *Node, err error) {
 	params := CreateParams{
 		Name:         d.Name,
 		Image:        d.Image,

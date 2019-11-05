@@ -11,13 +11,13 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/medyagh/kic/pkg/runner"
+	"github.com/medyagh/kic/pkg/command"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
 )
 
 // rename generate based on /etc/...
-func GenerateKubeConfig(r runner.Runner, hostIP string, hostPort int32, profile string) ([]byte, error) {
+func GenerateKubeConfig(r command.Runner, hostIP string, hostPort int32, profile string) ([]byte, error) {
 	cmd := exec.Command("cat", "/etc/kubernetes/admin.conf")
 	var buff bytes.Buffer
 	cmd.Stdout = &buff

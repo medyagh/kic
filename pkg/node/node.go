@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/medyagh/kic/pkg/assets"
+	"github.com/medyagh/kic/pkg/command"
 	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/oci"
-	"github.com/medyagh/kic/pkg/runner"
 
 	"github.com/pkg/errors"
 )
@@ -29,14 +29,14 @@ type Node struct {
 	name string
 	// cached node info etc.
 	cache *nodeCache
-	Cmder runner.Runner
+	R     command.Runner // Runner
 }
 
 // WriteFile writes content to dest on the node
 func (n *Node) WriteFile(dest, content string, perm string) error {
 	// create destination directory
 	cmd := exec.Command("mkdir", "-p", filepath.Dir(dest))
-	rr, err := n.Cmder.RunCmd(cmd)
+	rr, err := n.R.RunCmd(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create directory %s cmd: %v output:%q", cmd.Args, dest, rr.Output())
 	}
@@ -44,12 +44,12 @@ func (n *Node) WriteFile(dest, content string, perm string) error {
 	cmd = exec.Command("cp", "/dev/stdin", dest)
 	cmd.Stdin = strings.NewReader(content)
 
-	if rr, err := n.Cmder.RunCmd(cmd); err != nil {
+	if rr, err := n.R.RunCmd(cmd); err != nil {
 		return errors.Wrapf(err, "failed to run: cp /dev/stdin %s cmd: %v output:%q", dest, cmd.Args, rr.Output())
 	}
 
 	cmd = exec.Command("chmod", perm, dest)
-	_, err = n.Cmder.RunCmd(cmd)
+	_, err = n.R.RunCmd(cmd)
 	if err != nil {
 		return errors.Wrapf(err, "failed to run: chmod %s %s", perm, dest)
 	}
@@ -88,7 +88,7 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 		"ctr", "--namespace=k8s.io", "images", "import", "-",
 	)
 	cmd.Stdin = image
-	if _, err := n.Cmder.RunCmd(cmd); err != nil {
+	if _, err := n.R.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to load image")
 	}
 	return nil
@@ -101,7 +101,7 @@ func (n *Node) Copy(asset assets.CopyAsset) error {
 	}
 
 	cmd := exec.Command("chmod", asset.Permissions, asset.TargetPath())
-	if _, err := n.Cmder.RunCmd(cmd); err != nil {
+	if _, err := n.R.RunCmd(cmd); err != nil {
 		return errors.Wrap(err, "failed to chmod file permissions")
 	}
 	return nil
@@ -136,7 +136,7 @@ type CreateParams struct {
 }
 
 // todo use a struct for this
-func CreateNode(p CreateParams, cmder runner.Runner) (*Node, error) {
+func CreateNode(p CreateParams, cmder command.Runner) (*Node, error) {
 	runArgs := []string{
 		fmt.Sprintf("--cpus=%s", p.Cpus),
 		fmt.Sprintf("--memory=%s", p.Memory),
@@ -182,7 +182,7 @@ func CreateNode(p CreateParams, cmder runner.Runner) (*Node, error) {
 	)
 
 	// we should return a handle so the caller can clean it up
-	node := fromName(p.Name, cmder)
+	node, err := Find(p.Name, cmder)
 	if err != nil {
 		return node, fmt.Errorf("docker run error %v", err)
 	}
@@ -191,20 +191,14 @@ func CreateNode(p CreateParams, cmder runner.Runner) (*Node, error) {
 }
 
 // Find finds a node
-func Find(name string, cmder runner.Runner) (*Node, error) {
+func Find(name string, cmder command.Runner) (*Node, error) {
 	_, err := oci.Inspect(name, "{{.Id}}")
 	if err != nil {
 		return nil, fmt.Errorf("can't find node %v", err)
 	}
-
-	return fromName(name, cmder), nil
-}
-
-// fromName creates a node handle from the node' Name
-func fromName(name string, cmder runner.Runner) *Node {
 	return &Node{
 		name:  name,
 		cache: &nodeCache{},
-		Cmder: cmder,
-	}
+		R:     cmder,
+	}, nil
 }

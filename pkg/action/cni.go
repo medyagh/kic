@@ -6,13 +6,12 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/medyagh/kic/pkg/command"
 	"github.com/pkg/errors"
-
-	"github.com/medyagh/kic/pkg/runner"
 )
 
 // GetDefaultCNIManifest returns the default CNI manifest
-func GetDefaultCNIManifest(r runner.Runner, subnet string) ([]byte, error) {
+func GetDefaultCNIManifest(r command.Runner, subnet string) ([]byte, error) {
 	// read the manifest from the node
 	var raw bytes.Buffer
 	cmd := exec.Command("cat", "/kind/manifests/default-cni.yaml")
@@ -47,7 +46,7 @@ func GetDefaultCNIManifest(r runner.Runner, subnet string) ([]byte, error) {
 }
 
 // ApplyCNIManifest applies a CNI manifest
-func ApplyCNIManifest(r runner.Runner, manifest []byte) error {
+func ApplyCNIManifest(r command.Runner, manifest []byte) error {
 	cmd := exec.Command(
 		"kubectl", "create", "--kubeconfig=/etc/kubernetes/admin.conf",
 		"-f", "-",
