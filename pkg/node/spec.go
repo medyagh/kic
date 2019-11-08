@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/medyagh/kic/pkg/command"
+	"github.com/medyagh/kic/pkg/config/cri"
 	"github.com/pkg/errors"
 )
 
