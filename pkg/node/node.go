@@ -181,10 +181,14 @@ func CreateNode(p CreateParams, cmder command.Runner) (*Node, error) {
 		oci.WithPortMappings(p.PortMappings),
 	)
 
+	if err != nil {
+		return nil, errors.Wrap(err, "oci create ")
+	}
+
 	// we should return a handle so the caller can clean it up
 	node, err := Find(p.Name, cmder)
 	if err != nil {
-		return node, fmt.Errorf("docker run error %v", err)
+		return node, errors.Wrap(err, "find node")
 	}
 
 	return node, nil
