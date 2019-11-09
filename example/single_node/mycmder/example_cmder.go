@@ -40,7 +40,7 @@ func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*command.RunResult, error) {
 		)
 	}
 	// if the command is hooked up to the processes's output we want a tty
-	if IsTerminal(cmd.Stderr) || IsTerminal(cmd.Stdout) {
+	if isTerminal(cmd.Stderr) || isTerminal(cmd.Stdout) {
 		args = append(args,
 			"-t",
 		)
@@ -108,7 +108,7 @@ func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*command.RunResult, error) {
 }
 
 // IsTerminal returns true if the writer w is a terminal
-func IsTerminal(w io.Writer) bool {
+func isTerminal(w io.Writer) bool {
 	if v, ok := (w).(*os.File); ok {
 		return terminal.IsTerminal(int(v.Fd()))
 	}
