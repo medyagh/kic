@@ -81,12 +81,12 @@ echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm-file -src=/
 echo "Checking if file was removed" && docker exec cluster2-control-plane test ! -f /etc/copy-test.txt
 
 ## pause a node
-echo "Pausing a node" && ./out/e2e -pause -profile cluster2
-echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
+# echo "Pausing a node" && ./out/e2e -pause -profile cluster2
+# echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
 
-## stop a node
-echo "Stopping a node" && ./out/e2e -stop -profile cluster2
-echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
+# ## stop a node
+# echo "Stopping a node" && ./out/e2e -stop -profile cluster2
+# echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
 
 # remove our cluster in the end
 ./out/e2e -remove -profile cluster2
