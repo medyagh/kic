@@ -21,7 +21,7 @@ type createOpts struct {
 }
 
 // CreateContainer creates a container with "docker/podman run"
-func CreateContainer(image string, opts ...CreateOpt) ([]string, error) {
+func CreateContainer(ociBinary string, image string, opts ...CreateOpt) ([]string, error) {
 	o := &createOpts{}
 	for _, opt := range opts {
 		o = opt(o)
@@ -39,7 +39,7 @@ func CreateContainer(image string, opts ...CreateOpt) ([]string, error) {
 	args = append(args, runArgs...)
 	args = append(args, image)
 	args = append(args, o.ContainerArgs...)
-	cmd := exec.Command(DefaultOCI, args...)
+	cmd := exec.Command(ociBinary, args...)
 	var buff bytes.Buffer
 	cmd.Stdout = &buff
 	cmd.Stderr = &buff

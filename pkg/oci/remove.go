@@ -7,9 +7,9 @@ import (
 )
 
 // Remove removes a container
-func Remove(ociID string) error {
+func Remove(ociBinary string, ociID string) error {
 	// TODO: force remove should be an option
-	cmd := exec.Command(DefaultOCI, "rm", "-f", "-v", ociID)
+	cmd := exec.Command(ociBinary, "rm", "-f", "-v", ociID)
 	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "error removing node %s", ociID)
 	}

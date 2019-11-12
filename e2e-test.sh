@@ -15,12 +15,18 @@ make out/e2e
 lsof -ti tcp:8080 | xargs kill || true
 ./out/e2e -remove -profile m5 || true
 
+
 # start a cluster
 echo "Starting a cluster with 2 cpu and 2 GB ram" && ./out/e2e -start -profile m5 -cpu 2 -memory 2000m
 export KUBECONFIG=$HOME/.kube/kic-config-m5
 
+
+# test status command
+./out/e2e -status -profile m5 | grep "Running"
+
 # wait for things to be up print out pods -A for logs to see
 sleep 1 
+
 kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=300s -n kube-system || true
 kubectl get pods -A || true
 kubectl wait pod -l component=kube-scheduler --for condition=Initialized --timeout=100s -n kube-system || true
@@ -75,12 +81,12 @@ echo "Removing file from cluster" && ./out/e2e -profile cluster2 -rm-file -src=/
 echo "Checking if file was removed" && docker exec cluster2-control-plane test ! -f /etc/copy-test.txt
 
 ## pause a node
-echo "Pausing a node" && ./out/e2e -pause -profile cluster2
-echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
+# echo "Pausing a node" && ./out/e2e -pause -profile cluster2
+# echo "Checking if node was paused" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep paused
 
-## stop a node
-echo "Stopping a node" && ./out/e2e -stop -profile cluster2
-echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
+# ## stop a node
+# echo "Stopping a node" && ./out/e2e -stop -profile cluster2
+# echo "Checking if node was stopped" && docker inspect --format '{{.State.Status}}' cluster2-control-plane  | grep exited
 
 # remove our cluster in the end
 ./out/e2e -remove -profile cluster2

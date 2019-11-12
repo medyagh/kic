@@ -38,6 +38,7 @@ func main() {
 	dest := flag.String("dest", "", "destination to copy file/folder ")
 	pause := flag.Bool("pause", false, "pause all processes within one or more containers")
 	stop := flag.Bool("stop", false, "stop a container")
+	status := flag.Bool("status", false, "shows status")
 
 	flag.Parse()
 	p, err := freeport.GetFreePort()
@@ -228,6 +229,22 @@ func main() {
 			klog.Errorf("Error stop node %s %v", ns.Name, err)
 		}
 	}
+
+	if *status {
+		fmt.Printf("Status for: %s\n", *profile)
+		node, err := node.Find(nodeName, runner)
+		if err != nil {
+			klog.Errorf("error getting node %v", err)
+			os.Exit(1)
+		}
+
+		s, err := node.Status()
+		fmt.Println(s)
+		if err != nil {
+			fmt.Printf("error is %v", err)
+		}
+
+	}
 }
 
 func loadImage(image string, node *node.Node) {
@@ -247,7 +264,7 @@ func loadImage(image string, node *node.Node) {
 	imageTarPath := filepath.Join(dir, "image.tar")
 	fmt.Println(imageTarPath)
 	fmt.Printf("Saving image archive %s\n", image)
-	err = oci.Save(image, imageTarPath)
+	err = oci.Save(oci.DefaultOCI, image, imageTarPath)
 	if err != nil {
 		klog.Errorf("error saving image archive %s: %v", image, err)
 		os.Exit(1)
@@ -327,5 +344,5 @@ func copyAsset(n *node.Node, src, dest string) error {
 		Permissions: "0777",
 	}
 
-	return n.Copy(asset)
+	return n.Copy(oci.DefaultOCI, asset)
 }
