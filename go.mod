@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/docker/machine v0.16.2
+	github.com/docker/machine v0.7.1-0.20190718054102-a555e4f7a8f5 // version is 0.7.1 to pin to a555e4f7a8f5
 	github.com/emicklei/go-restful v2.9.6+incompatible // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
 	github.com/go-openapi/spec v0.19.2 // indirect
