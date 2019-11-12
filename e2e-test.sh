@@ -15,12 +15,21 @@ make out/e2e
 lsof -ti tcp:8080 | xargs kill || true
 ./out/e2e -remove -profile m5 || true
 
+# test status command should be stopped
+./out/e2e -status -profile m5 | grep "Stopped"
+
+
 # start a cluster
 echo "Starting a cluster with 2 cpu and 2 GB ram" && ./out/e2e -start -profile m5 -cpu 2 -memory 2000m
 export KUBECONFIG=$HOME/.kube/kic-config-m5
 
+
+# test status command
+./out/e2e -status -profile m5 | grep "Running"
+
 # wait for things to be up print out pods -A for logs to see
 sleep 1 
+
 kubectl wait deployment -l k8s-app=kube-dns --for condition=available --timeout=300s -n kube-system || true
 kubectl get pods -A || true
 kubectl wait pod -l component=kube-scheduler --for condition=Initialized --timeout=100s -n kube-system || true

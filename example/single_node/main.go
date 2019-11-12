@@ -234,7 +234,7 @@ func main() {
 		fmt.Printf("Status for: %s\n", *profile)
 		node, err := node.Find(nodeName, runner)
 		if err != nil {
-			klog.Errorf("error reading image (%s) from disk : %v", *userImg, err)
+			klog.Errorf("error getting node %v", err)
 			os.Exit(1)
 		}
 
