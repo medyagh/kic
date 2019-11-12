@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/docker/machine/libmachine/state"
 	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/command"
 	"github.com/medyagh/kic/pkg/config/cri"
@@ -20,6 +21,7 @@ const (
 	DefaultNetwork  = "bridge"
 	ClusterLabelKey = "io.k8s.sigs.kic.cluster" // ClusterLabelKey is applied to each node docker container for identification
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
+	DefaultOci      = "docker"
 )
 
 // Node represents a handle to a kic node
@@ -95,8 +97,8 @@ func (n *Node) LoadImageArchive(image io.Reader) error {
 }
 
 // Copy copies a local asset into the node
-func (n *Node) Copy(asset assets.CopyAsset) error {
-	if err := oci.Copy(n.name, asset); err != nil {
+func (n *Node) Copy(ociBinary string, asset assets.CopyAsset) error {
+	if err := oci.Copy(ociBinary, n.name, asset); err != nil {
 		return errors.Wrap(err, "failed to copy file/folder")
 	}
 
@@ -107,9 +109,14 @@ func (n *Node) Copy(asset assets.CopyAsset) error {
 	return nil
 }
 
+// Status gets status for node
+func (n *Node) Status() (state.State, error) {
+	return oci.Status(DefaultOci, n.name)
+}
+
 // Pause pauses all process in the node
 func (n *Node) Pause() error {
-	return oci.Pause(n.name)
+	return oci.Pause(DefaultOci, n.name)
 }
 
 // Stop stops the node
@@ -119,7 +126,7 @@ func (n *Node) Stop() error {
 
 // Remove removes the node
 func (n *Node) Remove() error {
-	return oci.Remove(n.name)
+	return oci.Remove(DefaultOci, n.name)
 }
 
 type CreateParams struct {
@@ -174,7 +181,7 @@ func CreateNode(p CreateParams, cmder command.Runner) (*Node, error) {
 		runArgs = append(runArgs, "--userns=host")
 	}
 
-	_, err := oci.CreateContainer(
+	_, err := oci.CreateContainer(DefaultOci,
 		p.Image,
 		oci.WithRunArgs(runArgs...),
 		oci.WithMounts(p.Mounts),

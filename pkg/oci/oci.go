@@ -204,8 +204,8 @@ func generatePortMappings(portMappings ...cri.PortMapping) []string {
 }
 
 // Save saves an image archive "docker/podman save"
-func Save(image, dest string) error {
-	cmd := exec.Command(DefaultOCI, "save", "-o", dest, image)
+func Save(ociBinary string, image, dest string) error {
+	cmd := exec.Command(ociBinary, "save", "-o", dest, image)
 	var buff bytes.Buffer
 	cmd.Stdout = &buff
 	cmd.Stderr = &buff
