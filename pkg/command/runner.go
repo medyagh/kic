@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/medyagh/kic/pkg/assets"
 )
 
 // RunResult holds the results of a Runner
@@ -45,4 +47,6 @@ type Runner interface {
 	// RunCmd runs a cmd of exec.Cmd type. allowing user to set cmd.Stdin, cmd.Stdout,...
 	// not all implementors are guaranteed to handle all the properties of cmd.
 	RunCmd(cmd *exec.Cmd) (*RunResult, error)
+	Copy(assets.LegacyCopyableFile) error
+	Remove(assets.LegacyCopyableFile) error
 }

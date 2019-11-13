@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/medyagh/kic/pkg/assets"
 	"github.com/medyagh/kic/pkg/command"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
@@ -105,6 +106,14 @@ func (c *containerCmder) RunCmd(cmd *exec.Cmd) (*command.RunResult, error) {
 	}
 	return rr, err
 
+}
+
+func (c *containerCmder) Copy(a assets.LegacyCopyableFile) error {
+	return fmt.Errorf("Not implemented")
+}
+
+func (c *containerCmder) Remove(a assets.LegacyCopyableFile) error {
+	return fmt.Errorf("Not implemented")
 }
 
 // IsTerminal returns true if the writer w is a terminal
