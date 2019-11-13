@@ -27,6 +27,20 @@ func (rr RunResult) Output() string {
 	return sb.String()
 }
 
+// Command returns a human readable command string that does not induce eye fatigue
+func (rr RunResult) Command() string {
+	var sb strings.Builder
+	sb.WriteString(rr.Args[0])
+	for _, a := range rr.Args[1:] {
+		if strings.Contains(a, " ") {
+			sb.WriteString(fmt.Sprintf(` "%s"`, a))
+			continue
+		}
+		sb.WriteString(fmt.Sprintf(" %s", a))
+	}
+	return sb.String()
+}
+
 type Runner interface {
 	// RunCmd runs a cmd of exec.Cmd type. allowing user to set cmd.Stdin, cmd.Stdout,...
 	// not all implementors are guaranteed to handle all the properties of cmd.
