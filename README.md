@@ -1,4 +1,4 @@
-# kic : Kuberentes in Container minimal & OCI agnonstic
+# kic : Kubernetes in Container minimal & OCI agnonstic
 [![Build Status](https://travis-ci.org/medyagh/kic.svg?branch=master)](https://travis-ci.org/medyagh/kic)
 
 ## Focus
