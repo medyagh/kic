@@ -33,7 +33,7 @@ func (d *Spec) Create(cmder command.Runner) (node *Node, err error) {
 	params := CreateParams{
 		Name:         d.Name,
 		Image:        d.Image,
-		ClusterLabel: ClusterLabelKey + d.Profile,
+		ClusterLabel: ClusterLabelKey + "=" + d.Profile,
 		Mounts:       d.ExtraMounts,
 		PortMappings: d.ExtraPortMappings,
 		Cpus:         d.CPUs,
@@ -76,9 +76,9 @@ func (d *Spec) ListNodes() ([]string, error) {
 		"-a",         // show stopped nodes
 		"--no-trunc", // don't truncate
 		// filter for nodes with the cluster label
-		"--filter", "label=" + ClusterLabelKey + d.Profile,
+		"--filter", "label=" + ClusterLabelKey,
 		// format to include friendly name and the cluster name
-		"--format", fmt.Sprintf(`{{.Names}}\t{{.Label "%s"}}`, ClusterLabelKey+d.Profile),
+		"--format", fmt.Sprintf(`{{.Names}}\t{{.Label "%s"}}`, ClusterLabelKey),
 	}
 	cmd := exec.Command("docker", args...)
 
