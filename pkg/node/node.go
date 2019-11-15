@@ -19,7 +19,7 @@ import (
 const (
 	// Docker default bridge network is named "bridge" (https://docs.docker.com/network/bridge/#use-the-default-bridge-network)
 	DefaultNetwork  = "bridge"
-	ClusterLabelKey = "io.k8s.sigs.kic.cluster" // ClusterLabelKey is applied to each node docker container for identification
+	ClusterLabelKey = "io.x-k8s.kind.cluster" // ClusterLabelKey is applied to each node docker container for identification
 	NodeRoleKey     = "io.k8s.sigs.kic.role"
 	DefaultOci      = "docker"
 )
@@ -158,6 +158,8 @@ func CreateNode(p CreateParams, cmder command.Runner) (*Node, error) {
 		"--security-opt", "seccomp=unconfined", // also ignore seccomp
 		"--tmpfs", "/tmp", // various things depend on working /tmp
 		"--tmpfs", "/run", // systemd wants a writable /run
+		// logs,pods be stroed on  filesystem vs inside container,
+		"--volume", "/var",
 		// some k8s things want /lib/modules
 		"-v", "/lib/modules:/lib/modules:ro",
 		"--hostname", p.Name, // make hostname match container name
