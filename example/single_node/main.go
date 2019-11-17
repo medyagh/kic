@@ -94,6 +94,7 @@ func main() {
 		podNetworkCIDR := "10.244.0.0/16"
 
 		cfg := action.ConfigData{
+			CertDir:              "/etc/kubernetes/pki",
 			ClusterName:          *profile,
 			KubernetesVersion:    *kubeVersion,
 			ControlPlaneEndpoint: ip + ":6443",

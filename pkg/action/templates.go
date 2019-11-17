@@ -18,6 +18,7 @@ kind: MasterConfiguration
 metadata:
   name: config
 kubernetesVersion: {{.KubernetesVersion}}
+certificatesDir: {{.CertDir}}
 clusterName: "{{.ClusterName}}"
 # we use a well know token for TLS bootstrap
 bootstrapTokens:
@@ -89,6 +90,7 @@ kind: ClusterConfiguration
 metadata:
   name: config
 kubernetesVersion: {{.KubernetesVersion}}
+certificatesDir: {{.CertDir}}
 clusterName: "{{.ClusterName}}"
 controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 networking:
@@ -181,6 +183,7 @@ kind: ClusterConfiguration
 metadata:
   name: config
 kubernetesVersion: {{.KubernetesVersion}}
+certificatesDir: {{.CertDir}}
 clusterName: "{{.ClusterName}}"
 controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 # on docker for mac we have to expose the api server via port forward,
@@ -278,6 +281,7 @@ kind: ClusterConfiguration
 metadata:
   name: config
 kubernetesVersion: {{.KubernetesVersion}}
+certificatesDir: {{.CertDir}}
 clusterName: "{{.ClusterName}}"
 controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 # on docker for mac we have to expose the api server via port forward,

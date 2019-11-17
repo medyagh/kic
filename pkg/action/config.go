@@ -12,6 +12,7 @@ import (
 // ConfigData is supplied to the kubeadm config template, with values populated
 // by the cluster package
 type ConfigData struct {
+	CertDir           string // 	The directory where the TLS certs are located.
 	ClusterName       string
 	KubernetesVersion string
 	// The ControlPlaneEndpoint, that is the address of the external loadbalancer
