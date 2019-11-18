@@ -47,8 +47,8 @@ func (d *Spec) Create(cmder command.Runner) (node *Node, err error) {
 	case "control-plane":
 		params.PortMappings = append(params.PortMappings, cri.PortMapping{
 			ListenAddress: d.APIServerAddress,
-			HostPort:      d.APIServerPort,
-			ContainerPort: d.ContainerPort,
+			HostPort:      d.ContainerPort,
+			ContainerPort: d.APIServerPort,
 		})
 		node, err = CreateNode(
 			params,
