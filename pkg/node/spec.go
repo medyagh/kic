@@ -40,7 +40,7 @@ func (d *Spec) Create(cmder command.Runner) (node *Node, err error) {
 		Cpus:         d.CPUs,
 		Memory:       d.Memory,
 		Envs:         d.Envs,
-		ExtraArgs:    []string{"--expose", fmt.Sprintf("%d", d.APIServerPort)},
+		ExtraArgs:    []string{"--expose", fmt.Sprintf("%d", d.ContainerPort)},
 	}
 
 	switch d.Role {
