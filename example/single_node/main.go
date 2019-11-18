@@ -67,6 +67,7 @@ func main() {
 		ExtraPortMappings: []cri.PortMapping{},
 		APIServerAddress:  *hostIP,
 		APIServerPort:     hostPort,
+		ContainerPort:     50013,
 		IPv6:              false,
 		Envs:              envs,
 	}

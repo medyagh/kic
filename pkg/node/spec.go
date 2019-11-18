@@ -25,6 +25,7 @@ type Spec struct {
 	ExtraPortMappings []cri.PortMapping
 	APIServerPort     int32
 	APIServerAddress  string
+	ContainerPort     int32
 	IPv6              bool
 	Envs              map[string]string // environment variables to be passsed to passed to create nodes
 }
@@ -47,7 +48,7 @@ func (d *Spec) Create(cmder command.Runner) (node *Node, err error) {
 		params.PortMappings = append(params.PortMappings, cri.PortMapping{
 			ListenAddress: d.APIServerAddress,
 			HostPort:      d.APIServerPort,
-			ContainerPort: 6443,
+			ContainerPort: d.ContainerPort,
 		})
 		node, err = CreateNode(
 			params,
